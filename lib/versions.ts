@@ -16,15 +16,6 @@ const VERSIONS_KEY = "campus-edu/versions.json";
 const FALLBACK_VERSIONS: AppVersion[] = [
   {
     id: "seed-1",
-    version: "1.0.0",
-    subtitle: "Android 15+ · Fichier APK",
-    isCurrent: true,
-    apkUrl:
-      "https://xowkbau1lvjwbvnm.public.blob.vercel-storage.com/Campus%20Edu%20Docs.apk",
-    createdAt: new Date(0).toISOString(),
-  },
-  {
-    id: "seed-2",
     version: "1.0.4",
     subtitle: "Recherche plus fluide",
     isCurrent: false,
