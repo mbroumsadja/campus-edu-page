@@ -16,7 +16,7 @@ const VERSIONS_KEY = "campus-edu/versions.json";
 const FALLBACK_VERSIONS: AppVersion[] = [
   {
     id: "seed-1",
-    version: "1.0.4",
+    version: "1.1.5",
     subtitle: "Recherche plus fluide",
     isCurrent: false,
     apkUrl:
