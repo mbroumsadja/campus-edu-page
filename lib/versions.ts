@@ -20,7 +20,7 @@ const FALLBACK_VERSIONS: AppVersion[] = [
     subtitle: "Recherche plus fluide",
     isCurrent: false,
     apkUrl:
-      "https://xowkbau1lvjwbvnm.public.blob.vercel-storage.com/Campus%20Edu%20Docs.apk",
+      "https://xowkbau1lvjwbvnm.public.blob.vercel-storage.com/Campus%20Edu%20Docs-1.apk",
     createdAt: new Date(1).toISOString(),
   },
 ];
