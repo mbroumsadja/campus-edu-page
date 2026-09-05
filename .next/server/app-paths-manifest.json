@@ -1,3 +1,7 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/admin/upload/route": "app/api/admin/upload/route.js",
+  "/icon.png/route": "app/icon.png/route.js",
+  "/admin/[secret]/page": "app/admin/[secret]/page.js",
   "/page": "app/page.js"
 }

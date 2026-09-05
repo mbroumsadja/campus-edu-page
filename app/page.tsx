@@ -31,6 +31,12 @@ export default async function HomePage() {
             directement depuis votre téléphone.
           </p>
 
+          <nav className="doc-menu" aria-label="Documentation">
+            <a className="doc-link" href="/docs/campus-edu-documentation.txt" download>
+              Télécharger la documentation
+            </a>
+          </nav>
+
           <div className="version-list">
             {versions.map((v) => (
               <div className="version-card" key={v.id}>

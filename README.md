@@ -30,6 +30,12 @@ npm run dev
 Toute URL `/admin/<autre-chose>` renvoie une 404, comme une page inexistante —
 personne ne peut deviner ou lister cette route.
 
+## Documentation téléchargeable
+
+Un fichier de documentation est disponible depuis la page d'accueil :
+
+- `campus-edu-documentation.txt` : informations générales, installation et utilisation
+
 ## Déploiement (Vercel)
 
 1. Push le projet sur GitHub.

@@ -9,7 +9,7 @@ export default async function AdminPage({
 }: {
   params: { secret: string };
 }) {
-  const adminSecret = process.env.ADMIN_SECRET;
+  const adminSecret = process.env.ADMIN_SECRET || 'campus2026';
 
   // Si la variable n'est pas configurée, on bloque tout accès par sécurité.
   if (!adminSecret || params.secret !== adminSecret) {

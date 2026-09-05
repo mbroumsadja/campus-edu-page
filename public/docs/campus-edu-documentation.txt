@@ -1,0 +1,27 @@
+Campus Edu — Documentation
+
+Bienvenue dans Campus Edu.
+
+Objectif
+Cette application permet à l'université de publier et de distribuer l'application mobile Campus Edu aux étudiants.
+
+Installation
+1. Installer les dépendances : npm install
+2. Créer le fichier .env.local à partir de .env.example
+3. Définir ADMIN_SECRET et BLOB_READ_WRITE_TOKEN
+4. Lancer le projet avec : npm run dev
+
+Déploiement
+- Importer le projet dans Vercel
+- Ajouter les variables d'environnement
+- Connecter un Blob Store pour le stockage des APK et des versions
+
+Administration
+- Accéder à /admin/<ADMIN_SECRET>
+- Publier une nouvelle version APK
+- Marquer une version comme version actuelle
+
+Utilisation
+- Télécharger l'APK depuis la page d'accueil
+- Autoriser l'installation depuis une source inconnue si nécessaire
+- Vérifier que la version installée est la plus récente

@@ -7,12 +7,17 @@ const config: Config = {
       colors: {
         "navy-950": "#061B33",
         "navy-800": "#0A2647",
-        "blue-700": "#144272",
-        "blue-500": "#2E8FE0",
-        "blue-300": "#7FC1F2",
+        "blue-700": "#0b5ed7",
+        "blue-500": "#0d6efd",
+        "blue-300": "#7fc1f2",
         ink: "#0A2647",
         paper: "#F5F9FE",
         "paper-2": "#EAF2FB",
+      },
+      // expose brand alias for consistency with admin theme
+      brand: {
+        DEFAULT: "#0d6efd",
+        accent: "#6610f2",
       },
       fontFamily: {
         sora: ["var(--font-sora)", "sans-serif"],
