@@ -62,7 +62,7 @@ export default async function HomePage() {
               <div className="phone-mockup">
                 {/* Replaced the mockup grid with the provided app screenshot */}
                 <Image
-                  src="/app.jpj"
+                  src="/app.jpg"
                   alt="Campus Edu app screenshot"
                   width={320}
                   height={700}
