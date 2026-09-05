@@ -60,16 +60,16 @@ export default async function HomePage() {
 
             <div className="phone-scene" aria-hidden="true">
               <div className="phone-mockup">
-                <div className="phone-notch" />
-                <div className="screen-grid">
-                  {Array.from({ length: 9 }).map((_, index) => (
-                    <div key={index} className="pdf-item">
-                      <span className="pdf-icon">PDF</span>
-                    </div>
-                  ))}
-                </div>
+                {/* Replaced the mockup grid with the provided app screenshot */}
+                <Image
+                  src="/app.jpj"
+                  alt="Campus Edu app screenshot"
+                  width={320}
+                  height={700}
+                  priority
+                />
               </div>
-              <div className="floating-badge">v {versions[0]?.version ?? "1.0.0"}</div>
+              <div className="floating-badge">v 1.1.6</div>
             </div>
           </div>
         </section>
