@@ -9,9 +9,8 @@ export default async function AdminPage({
 }: {
   params: { secret: string };
 }) {
-  const adminSecret = process.env.ADMIN_SECRET || 'campus2026';
+  const adminSecret = process.env.ADMIN_SECRET || "campus2026";
 
-  // Si la variable n'est pas configurée, on bloque tout accès par sécurité.
   if (!adminSecret || params.secret !== adminSecret) {
     notFound();
   }
@@ -19,29 +18,44 @@ export default async function AdminPage({
   const versions = await getVersions();
 
   return (
-    <div className="admin-wrap">
-      <h1 style={{ fontSize: 22, marginBottom: 4 }}>Panneau admin</h1>
-      <p className="meta" style={{ marginBottom: 24 }}>
-        Publier une nouvelle version de l&apos;application
-      </p>
-
-      <div className="admin-card">
-        <UploadForm secret={params.secret} />
+    <div className="admin-page">
+      <div className="admin-page-header">
+        <div>
+          <p className="admin-kicker">Administration</p>
+          <h1>Panneau de publication</h1>
+        </div>
+        <span className="status-pill status-pill-soft">Campus Edu</span>
       </div>
 
-      <div className="admin-card" style={{ marginTop: 20 }}>
-        <h2 style={{ fontSize: 15, marginBottom: 12 }}>Versions publiées</h2>
-        {versions.length === 0 && (
-          <p className="meta">Aucune version pour le moment.</p>
-        )}
-        {versions.map((v) => (
-          <div className="admin-list-item" key={v.id}>
-            <span>
-              <strong>v{v.version}</strong> {v.isCurrent ? "(actuelle)" : ""} —{" "}
-              {v.subtitle}
-            </span>
+      <div className="admin-shell">
+        <div className="admin-card admin-card-primary">
+          <div className="admin-card-header">
+            <h2>Publier une version</h2>
+            <p>Ajoutez une nouvelle APK, définissez la version et la description.</p>
           </div>
-        ))}
+          <UploadForm secret={params.secret} />
+        </div>
+
+        <div className="admin-card admin-card-secondary">
+          <div className="admin-card-header">
+            <h2>Versions publiées</h2>
+            <p>Historique des déclinaisons et des mises à jour.</p>
+          </div>
+
+          {versions.length === 0 && <p className="meta">Aucune version pour le moment.</p>}
+
+          <div className="admin-list">
+            {versions.map((v) => (
+              <div className="admin-list-item" key={v.id}>
+                <div className="admin-list-main">
+                  <span className="admin-version-badge">v{v.version}</span>
+                  {v.isCurrent && <span className="admin-current-badge">Actuelle</span>}
+                </div>
+                <span className="admin-list-copy">{v.subtitle}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
