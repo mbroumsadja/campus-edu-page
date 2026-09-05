@@ -177,9 +177,9 @@ img {
 .cta-primary,
 .version-card-btn,
 .admin-submit {
-  background: linear-gradient(135deg, var(--navy-850, #0a3775), var(--blue-500));
+  background: #0b7fe0;
   color: var(--white);
-  box-shadow: 0 18px 28px -18px rgba(11, 85, 146, 0.8);
+  box-shadow: none;
 }
 
 .pill-button {
@@ -269,7 +269,8 @@ img {
 .doc-link:hover,
 .version-card-btn:hover,
 .admin-submit:hover {
-  transform: translateY(-2px);
+  transform: none;
+  box-shadow: none;
 }
 
 .cta-secondary {
@@ -653,20 +654,179 @@ footer p {
 
 @media (max-width: 560px) {
   .wrap {
-    padding: 0 20px;
+    padding: 0 18px;
+  }
+
+  .nav-wrap {
+    min-height: 96px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .brand {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .brand .word {
+    font-size: 1.2rem;
+  }
+
+  .brand .tagline {
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+
+  .main-menu {
+    gap: 10px 18px;
+    margin-top: 4px;
+  }
+
+  .main-menu a {
+    font-size: 0.8rem;
+  }
+
+  .pill-button {
+    width: 100%;
+    max-width: 240px;
+  }
+
+  .hero-section {
+    padding-top: 18px;
   }
 
   .hero-copy h1 {
+    font-size: clamp(2.7rem, 17vw, 5.2rem);
     letter-spacing: -0.06em;
+    line-height: 0.88;
+  }
+
+  .lead {
+    font-size: 1rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cta-primary,
+  .cta-secondary,
+  .doc-link {
+    width: 100%;
+  }
+
+  .phone-scene {
+    min-height: 360px;
+  }
+
+  .phone-mockup {
+    width: min(270px, 82vw);
+    height: 440px;
+    border-radius: 28px;
+  }
+
+  .screen-grid {
+    gap: 10px;
+    padding: 72px 18px 14px;
+  }
+
+  .pdf-icon {
+    width: 48px;
+    height: 62px;
+    font-size: 0.58rem;
+  }
+
+  .floating-badge {
+    right: 10px;
+    bottom: 12px;
+    min-width: 70px;
+    min-height: 30px;
+  }
+
+  .feature-band {
+    padding-top: 24px;
+  }
+
+  .brand-badge {
+    padding: 10px 14px;
+  }
+
+  .brand-badge-name {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  .brand-badge-sub {
+    font-size: 8px;
+  }
+
+  .feature-band h2 {
+    margin-top: 28px;
+    font-size: clamp(2.1rem, 9vw, 3.6rem);
+    line-height: 0.98;
+  }
+
+  .download-panel {
+    padding-top: 24px;
+    padding-bottom: 48px;
   }
 
   .download-box,
   .version-panel {
-    padding: 18px;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .download-copy h3 {
+    font-size: clamp(1.8rem, 8vw, 2.6rem);
+  }
+
+  .download-copy p {
+    font-size: 0.97rem;
+  }
+
+  .doc-menu {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .status-pill {
     display: none;
+  }
+
+  .version-card {
+    padding: 14px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand .tagline {
+    font-size: 8px;
+  }
+
+  .main-menu {
+    gap: 8px 12px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(2.4rem, 18vw, 4.3rem);
+  }
+
+  .phone-mockup {
+    width: min(235px, 78vw);
+    height: 390px;
+  }
+
+  .screen-grid {
+    gap: 8px;
+    padding: 64px 14px 12px;
+  }
+
+  .pdf-icon {
+    width: 42px;
+    height: 54px;
+    font-size: 0.48rem;
   }
 }
 
