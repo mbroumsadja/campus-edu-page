@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { getVersions } from "@/lib/versions";
-import Header from "./components/Header";
 
 export const revalidate = 0;
 
@@ -9,7 +8,28 @@ export default async function HomePage() {
 
   return (
     <div className="site-shell">
-      <Header />
+      <header className="topbar">
+        <div className="wrap nav-wrap">
+          <div className="brand">
+            <Image src="/logo.png" alt="Campus Edu" width={52} height={52} priority />
+            <div className="brand-text">
+              <div className="word">Campus Edu</div>
+              <div className="tagline">Partagez · Téléchargez · Réussissez</div>
+            </div>
+          </div>
+
+          <nav className="main-menu" aria-label="Menu principal">
+            <a href="#accueil">Campus Edu</a>
+            <a href="#documentation">Documentation</a>
+            <a href="#guide">Guide Etudiant</a>
+            <a href="#telechargement">Téléchargement</a>
+          </nav>
+
+          <a className="pill-button" href="#telechargement">
+            Télécharger
+          </a>
+        </div>
+      </header>
 
       <main className="page-main">
         <section className="hero-section" id="accueil">
