@@ -1006,3 +1006,110 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+
+/* Ajustements spécifiques pour petits écrans Android : réduire la hauteur du header et réaligner les éléments */
+@media (max-width: 480px) {
+  .topbar {
+    /* légère augmentation de l'opacité pour meilleure lisibilité sur mobile */
+    background: rgba(242, 242, 238, 0.98);
+    border-bottom-width: 1px;
+  }
+
+  .nav-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 56px; /* réduit la hauteur du header */
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .brand img {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px -8px rgba(11, 34, 61, 0.55);
+  }
+
+  .brand-text {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Masquer le slogan pour gagner de la place sur petit écran */
+  .brand .tagline {
+    display: none;
+  }
+
+  .brand .word {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  /* Réduire et centrer le menu principal */
+  .main-menu {
+    order: 3;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .main-menu a {
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 4px 6px;
+  }
+
+  /* Rendre le bouton d'action plus compact et accessible */
+  .pill-button {
+    order: 2;
+    min-width: 100px;
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Si l'espace est vraiment limité, empiler proprement */
+  @media (max-width: 360px) {
+    .nav-wrap {
+      flex-wrap: wrap;
+      justify-content: center;
+      min-height: 64px;
+      padding-top: 6px;
+      padding-bottom: 6px;
+      gap: 6px;
+    }
+
+    .brand {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .main-menu {
+      order: 4;
+      width: 100%;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .pill-button {
+      order: 2;
+      width: auto;
+      max-width: 180px;
+    }
+  }
+}
