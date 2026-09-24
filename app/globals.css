@@ -288,7 +288,7 @@ img {
 
 .phone-mockup {
   position: relative;
-  width: min(360px, 76vw);
+  width: min(310px, 76vw);
   height: 610px;
   border-radius: 36px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(216, 229, 240, 0.92));
