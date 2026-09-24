@@ -165,7 +165,7 @@ img {
 .doc-link,
 .version-card-btn,
 .admin-submit {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;

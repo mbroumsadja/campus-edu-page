@@ -17,30 +17,6 @@ export default function Header() {
           </div>
         </div>
 
-        <button
-          className="hamburger"
-          aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-          aria-expanded={open}
-          onClick={() => setOpen((s) => !s)}
-        >
-          <span className={`hamburger-box ${open ? "is-open" : ""}`} />
-        </button>
-
-        <nav className={`main-menu ${open ? "open" : ""}`} aria-label="Menu principal">
-          <a href="#accueil" onClick={() => setOpen(false)}>
-            Campus Edu
-          </a>
-          <a href="#documentation" onClick={() => setOpen(false)}>
-            Documentation
-          </a>
-          <a href="#guide" onClick={() => setOpen(false)}>
-            Guide Etudiant
-          </a>
-          <a href="#telechargement" onClick={() => setOpen(false)}>
-            Téléchargement
-          </a>
-        </nav>
-
         <a className="pill-button" href="#telechargement">
           Télécharger
         </a>

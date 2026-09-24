@@ -18,18 +18,10 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Checkbox toggle for CSS-only mobile hamburger menu */}
-          <input type="checkbox" id="nav-toggle" className="nav-toggle" />
-          <label htmlFor="nav-toggle" className="hamburger" aria-hidden="true">
-            <span className="hamburger-box" />
-          </label>
-
           <nav className="main-menu" aria-label="Menu principal">
             <a href="#accueil">Campus Edu</a>
             <a href="#documentation">Documentation</a>
             <a href="#guide">Guide Etudiant</a>
-            {/* include Télécharger in the menu for mobile */}
-            <a href="#telechargement" className="download-link">Téléchargement</a>
           </nav>
 
           <a className="pill-button" href="#telechargement">
