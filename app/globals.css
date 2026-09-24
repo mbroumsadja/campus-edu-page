@@ -1015,6 +1015,7 @@ footer p {
     border-bottom-width: 1px;
   }
 
+  /* nécessaire pour positionner le menu mobile en absolute */
   .nav-wrap {
     display: flex;
     align-items: center;
@@ -1023,6 +1024,7 @@ footer p {
     min-height: 56px; /* réduit la hauteur du header */
     padding-top: 8px;
     padding-bottom: 8px;
+    position: relative;
   }
 
   .brand {
@@ -1057,20 +1059,97 @@ footer p {
     line-height: 1;
   }
 
-  /* Réduire et centrer le menu principal */
+  /* Hamburger visible uniquement sur petits écrans */
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* simple 3-line hamburger drawn with pseudo elements */
+  .hamburger-box,
+  .hamburger-box::before,
+  .hamburger-box::after {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--navy-900);
+    border-radius: 2px;
+    position: relative;
+    transition: transform 0.22s ease, opacity 0.18s ease;
+  }
+
+  .hamburger-box::before,
+  .hamburger-box::after {
+    content: "";
+    position: absolute;
+    left: 0;
+  }
+
+  .hamburger-box::before {
+    top: -7px;
+  }
+
+  .hamburger-box::after {
+    top: 7px;
+  }
+
+  .hamburger-box.is-open {
+    background: transparent;
+  }
+
+  .hamburger-box.is-open::before {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .hamburger-box.is-open::after {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* Réduire et centrer le menu principal; par défaut on le cache sur mobile et on l'affiche uniquement quand .open est présent */
   .main-menu {
     order: 3;
     flex: 1;
-    display: flex;
+    display: none; /* hidden by default on mobile */
     align-items: center;
     justify-content: center;
     gap: 8px;
   }
 
+  .main-menu.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: calc(100% + 6px);
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 20px rgba(11,34,61,0.08);
+    z-index: 30;
+  }
+
   .main-menu a {
-    font-size: 0.82rem;
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.92rem;
     font-weight: 700;
-    padding: 4px 6px;
+    padding: 10px 8px;
+    color: var(--navy-900);
+    border-radius: 8px;
+  }
+
+  .main-menu a + a {
+    margin-top: 6px;
   }
 
   /* Rendre le bouton d'action plus compact et accessible */
@@ -1100,7 +1179,7 @@ footer p {
 
     .main-menu {
       order: 4;
-      width: 100%;
+      width: calc(100% - 16px);
       justify-content: center;
       gap: 6px;
       margin-top: 4px;
