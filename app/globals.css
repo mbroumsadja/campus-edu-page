@@ -292,8 +292,9 @@ img {
   height: 610px;
   border-radius: 36px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(216, 229, 240, 0.92));
-  box-shadow: 0 35px 40px rgba(0, 0, 0, 0.2);
-  border: 9px solid #101820;
+  /* réduction de la bordure noire épaisse : suppression de la bordure et adoucissement de l'ombre */
+  border: none;
+  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 }
 
