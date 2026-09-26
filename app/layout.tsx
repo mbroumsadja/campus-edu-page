@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Campus Edu — Application Étudiants",
+  title: "Campus educatif",
   description:
     "Tous vos sujets d'examen et cours sont accessibles via cette application, directement depuis votre téléphone.",
 };
