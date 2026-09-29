@@ -573,7 +573,7 @@
   /* Bande de statut : l'encoche ne recouvre plus le titre de l'app */
   padding-top: 34px;
   border-radius: 37px;
-  background: #f8f9ff;
+  background: #fff;
 }
 .lp-phone-screen img {
   width: 100%;
@@ -634,17 +634,17 @@
 }
 /* Les cartes restent dans la zone vide de l'écran : la recherche et la barre du bas restent lisibles */
 .lp-float--a {
-  top: 36%;
+  top: 41%;
   left: -2%;
   --fd: -1s;
 }
 .lp-float--b {
-  top: 52%;
+  top: 56%;
   right: -2%;
   --fd: -3s;
 }
 .lp-float--c {
-  top: 68%;
+  top: 70%;
   left: 2%;
   --fd: -5s;
 }

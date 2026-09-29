@@ -65,7 +65,7 @@ const FAQ = [
   },
   {
     q: "Où retrouver les fichiers que j'ai téléchargés ?",
-    a: "Dans l'onglet « Téléchargés » de l'application, à côté de l'onglet « Recherche ».",
+    a: "Dans l'onglet « Fichiers » de l'application, à côté de « Catalogue », « Recherche » et « Notification ».",
   },
 ];
 
@@ -114,9 +114,8 @@ export default async function HomePage() {
               </h1>
 
               <p className="lp-lead lp-rise" style={delay(160)}>
-                Campus Edu Docs réunit les supports de cours, les anciens examens et les ressources
-                académiques de l&apos;Université de Garoua. Cherchez, téléchargez, révisez, où que
-                vous soyez.
+                Campus Educatif réunit les cours, les sujets d&apos;examen et leurs corrigés de
+                l&apos;Université de Garoua. Cherchez, téléchargez, révisez, où que vous soyez.
               </p>
 
               <div className="lp-actions lp-rise" style={delay(240)}>
@@ -151,10 +150,10 @@ export default async function HomePage() {
                 <div className="lp-phone">
                   <div className="lp-phone-screen">
                     <Image
-                      src="/app.jpg"
-                      alt="Écran de recherche de l'application Campus Edu Docs"
+                      src="/app-1.17.jpg"
+                      alt="Écran de recherche de l'application Campus Educatif avec les filtres école, filière et niveau"
                       width={720}
-                      height={1530}
+                      height={1516}
                       sizes="(min-width: 960px) 300px, 70vw"
                       priority
                     />
@@ -176,8 +175,8 @@ export default async function HomePage() {
                   <IconFolderDown size={20} />
                 </span>
                 <div>
-                  <strong>Téléchargés</strong>
-                  <small>Vos fichiers, réunis</small>
+                  <strong>Fichiers</strong>
+                  <small>Vos téléchargements, réunis</small>
                 </div>
               </div>
               <div className="lp-float lp-float--c" aria-hidden="true">
@@ -255,8 +254,8 @@ export default async function HomePage() {
                 <span className="lp-card-icon">
                   <IconFile size={24} />
                 </span>
-                <h3>Cours et anciens examens au même endroit</h3>
-                <p>Supports de cours, sujets passés et ressources académiques de l&apos;université.</p>
+                <h3>Cours, sujets et corrigés au même endroit</h3>
+                <p>Des cours, des sujets d&apos;examen et leurs corrigés, réunis dans une seule application.</p>
                 <div className="lp-card-visual" aria-hidden="true">
                   <div className="lp-sheets">
                     <span />
@@ -270,15 +269,17 @@ export default async function HomePage() {
                 <span className="lp-card-icon">
                   <IconFilter size={24} />
                 </span>
-                <h3>Affinez avec les filtres</h3>
-                <p>Réduisez la liste pour ne garder que ce dont vous avez besoin.</p>
+                <h3>Affinez par école, filière et niveau</h3>
+                <p>Choisissez votre école, votre filière et votre niveau, de L1 à M2, pour ne voir que vos documents.</p>
                 <div className="lp-card-visual" aria-hidden="true">
                   <div className="lp-toggles">
+                    <span className="lp-toggle">L1</span>
                     <span className="lp-toggle" data-on="true">
-                      Tous
+                      L2
                     </span>
-                    <span className="lp-toggle">Cours</span>
-                    <span className="lp-toggle">Examens</span>
+                    <span className="lp-toggle">L3</span>
+                    <span className="lp-toggle">M1</span>
+                    <span className="lp-toggle">M2</span>
                   </div>
                 </div>
               </Reveal>
@@ -287,8 +288,8 @@ export default async function HomePage() {
                 <span className="lp-card-icon">
                   <IconFolderDown size={24} />
                 </span>
-                <h3>Vos fichiers dans « Téléchargés »</h3>
-                <p>Retrouvez tout ce que vous avez enregistré, à côté de la recherche.</p>
+                <h3>Vos téléchargements, toujours sous la main</h3>
+                <p>L&apos;onglet « Fichiers » regroupe tout ce que vous avez téléchargé.</p>
                 <div className="lp-card-visual" aria-hidden="true">
                   <div className="lp-tabs">
                     <span className="lp-tab" data-on="true">
@@ -298,7 +299,7 @@ export default async function HomePage() {
                     <span className="lp-tab">
                       <span className="lp-tab-badge">2</span>
                       <IconFolderDown size={18} />
-                      Téléchargés
+                      Fichiers
                     </span>
                   </div>
                 </div>
@@ -362,11 +363,11 @@ export default async function HomePage() {
               <div className="lp-docs">
                 <a
                   className="lp-btn lp-btn--outline"
-                  href="/docs/campus-edu-documentation.pdf"
+                  href="/docs/campus-edu-documentation.pptx"
                   download
                 >
                   <IconFile size={20} />
-                  Documentation (PDF)
+                  Documentation (PPTX)
                 </a>
                 <a className="lp-btn lp-btn--outline" href="#guide">
                   Guide étudiant
@@ -459,7 +460,7 @@ export default async function HomePage() {
           <Reveal>
             <h2>Prêt à réviser plus efficacement&nbsp;?</h2>
             <p>
-              Installez Campus Edu Docs et gardez vos cours et anciens examens dans votre poche.
+              Installez Campus Educatif et gardez vos cours, sujets et corrigés dans votre poche.
             </p>
             <div className="lp-actions">
               <a className="lp-btn lp-btn--primary" href="#telechargement">

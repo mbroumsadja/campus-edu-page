@@ -5,7 +5,7 @@ import "./globals.css";
 import "./landing.css";
 
 export const metadata: Metadata = {
-  title: "Campus Edu Docs | Cours et examens de l'Université de Garoua",
+  title: "Campus Educatif | Cours et sujets d'examen de l'Université de Garoua",
   description:
     "Tous vos sujets d'examen et cours sont accessibles via cette application, directement depuis votre téléphone.",
 };
