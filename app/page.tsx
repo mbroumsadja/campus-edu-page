@@ -1,157 +1,507 @@
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import { getVersions } from "@/lib/versions";
+import Header from "./components/Header";
+import PhoneTilt from "./components/PhoneTilt";
+import Reveal from "./components/Reveal";
+import {
+  IconArrowRight,
+  IconBook,
+  IconCheck,
+  IconChevronDown,
+  IconDownload,
+  IconFile,
+  IconFilter,
+  IconFolderDown,
+  IconHistory,
+  IconSearch,
+  IconShield,
+} from "./components/Icons";
 
 export const revalidate = 0;
 
+const CHIPS = [
+  "Mathématiques",
+  "Algorithmique",
+  "Anciens examens",
+  "Supports de cours",
+  "Ressources académiques",
+  "Recherche rapide",
+  "Filtres",
+  "Fichiers téléchargés",
+];
+
+const STEPS = [
+  {
+    title: "Téléchargez l'APK",
+    text: "Choisissez la version actuelle dans la section Téléchargement et enregistrez le fichier sur votre téléphone.",
+  },
+  {
+    title: "Autorisez l'installation",
+    text: "Si Android le demande, autorisez l'installation depuis une source inconnue, puis lancez l'installation.",
+  },
+  {
+    title: "Vérifiez la version",
+    text: "Contrôlez que la version installée correspond bien à la version marquée « Actuelle » sur cette page.",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Faut-il créer un compte ?",
+    a: "Non. L'accès est public : installez l'application, puis recherchez vos documents sans vous inscrire.",
+  },
+  {
+    q: "Sur quels téléphones fonctionne l'application ?",
+    a: "Campus Edu est distribuée sous forme de fichier APK, le format d'installation des applications Android.",
+  },
+  {
+    q: "Pourquoi Android demande-t-il une autorisation ?",
+    a: "L'application s'installe depuis un fichier et non depuis une boutique. Android peut donc demander d'autoriser l'installation depuis une source inconnue. C'est normal.",
+  },
+  {
+    q: "Comment savoir si j'ai la dernière version ?",
+    a: "Comparez le numéro de la version installée avec celle marquée « Actuelle » dans la section Téléchargement.",
+  },
+  {
+    q: "Où retrouver les fichiers que j'ai téléchargés ?",
+    a: "Dans l'onglet « Téléchargés » de l'application, à côté de l'onglet « Recherche ».",
+  },
+];
+
+function delay(ms: number): CSSProperties {
+  return { ["--d" as string]: `${ms}ms` } as CSSProperties;
+}
+
 export default async function HomePage() {
   const versions = await getVersions();
+  const current = versions.find((v) => v.isCurrent) ?? versions[0];
+  const older = versions.filter((v) => v.id !== current?.id);
 
   return (
-    <div className="site-shell">
-      <header className="topbar">
-        <div className="wrap nav-wrap">
-          <div className="brand">
-            <Image src="/logo.png" alt="Campus Edu" width={52} height={52} priority />
-            <div className="brand-text">
-              <div className="word">Campus Edu</div>
-              <div className="tagline">Partagez · Téléchargez · Réussissez</div>
-            </div>
+    <div className="lp">
+      <a className="lp-skip" href="#fonctionnalites">
+        Aller au contenu
+      </a>
+
+      <Header />
+
+      <main>
+        {/* ------------------------------------------------------------ */}
+        {/* Hero                                                          */}
+        {/* ------------------------------------------------------------ */}
+        <section className="lp-hero" id="accueil">
+          <div className="lp-aurora" aria-hidden="true">
+            <span />
+            <span />
+            <span />
           </div>
+          <div className="lp-grid-bg" aria-hidden="true" />
 
-          <nav className="main-menu" aria-label="Menu principal">
-            <a href="#accueil">Campus Edu</a>
-            <a href="#documentation">Documentation</a>
-            <a href="#guide">Guide Etudiant</a>
-          </nav>
+          <div className="lp-wrap lp-hero-grid">
+            <div className="lp-hero-copy">
+              {current && (
+                <a className="lp-badge lp-rise" href="#telechargement" style={delay(0)}>
+                  <span className="lp-dot" aria-hidden="true" />
+                  Version {current.version} disponible
+                  <IconArrowRight size={16} />
+                </a>
+              )}
 
-          <a className="pill-button" href="#telechargement">
-            Télécharger
-          </a>
-        </div>
-      </header>
-
-      <main className="page-main">
-        <section className="hero-section" id="accueil">
-          <div className="wrap hero-grid">
-            <div className="hero-copy">
-              <span className="eyebrow eyebrow-light">Campus Edu · Application Étudiants</span>
-              <h1>
-                Optimisez
-                <br />
-                vos
-                <br />
-                révisions
+              <h1 className="lp-rise" style={delay(80)}>
+                Tous vos cours et examens,{" "}
+                <span className="lp-grad">dans votre poche.</span>
               </h1>
-              <p className="lead">
-                Accédez à vos supports de cours, anciens examens et ressources académiques depuis
-                votre téléphone, partout et à tout moment.
+
+              <p className="lp-lead lp-rise" style={delay(160)}>
+                Campus Edu Docs réunit les supports de cours, les anciens examens et les ressources
+                académiques de l&apos;Université de Garoua. Cherchez, téléchargez, révisez, où que
+                vous soyez.
               </p>
 
-              <div className="hero-actions">
-                <a className="cta-primary" href="#telechargement">
+              <div className="lp-actions lp-rise" style={delay(240)}>
+                <a className="lp-btn lp-btn--primary" href="#telechargement">
+                  <IconDownload size={20} />
                   Télécharger l&apos;APK
                 </a>
-                <a className="cta-secondary" href="#documentation">
-                  Documentation
+                <a className="lp-btn lp-btn--ghost" href="#guide">
+                  Comment installer
+                  <IconArrowRight size={18} />
                 </a>
               </div>
+
+              <ul className="lp-trust lp-rise" style={delay(320)}>
+                <li>
+                  <IconCheck size={18} />
+                  Accès public, sans compte
+                </li>
+                <li>
+                  <IconCheck size={18} />
+                  Application Android
+                </li>
+                <li>
+                  <IconCheck size={18} />
+                  Université de Garoua
+                </li>
+              </ul>
             </div>
 
-            <div className="phone-scene" aria-hidden="true">
-              <div className="phone-mockup">
-                {/* Replaced the mockup grid with the provided app screenshot */}
-                <Image
-                  src="/app.jpg"
-                  alt="Campus Edu app screenshot"
-                  width={320}
-                  height={700}
-                  priority
-                />
-              </div>
-              <div className="floating-badge">v 1.1.6</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="info-section" id="documentation">
-          <div className="wrap feature-band">
-            <div className="brand-badge">
-              <div className="brand-badge-mark">C</div>
-              <div>
-                <div className="brand-badge-name">CAMPUS EDU</div>
-                <div className="brand-badge-sub">Partagez · Téléchargez · Réussissez</div>
-              </div>
-            </div>
-
-            <h2>
-              Améliorez vos notes
-              <br />
-              avec la plus grande
-              <br />
-              bibliothèque numérique
-              <br />
-              de l&apos;Université.
-            </h2>
-          </div>
-        </section>
-
-        <section className="download-panel" id="telechargement">
-          <div className="wrap download-wrap">
-            <div className="download-box">
-              <div className="download-copy">
-                <span className="eyebrow eyebrow-dark">Téléchargement</span>
-                <h3>Tous les documents de cours en un seul endroit</h3>
-                <p>
-                  Téléchargez la dernière version de l&apos;application sans compte, installez le fichier
-                  APK et accédez à vos ressources numériques immédiatement.
-                </p>
-
-                <nav className="doc-menu" aria-label="Documentation et accès">
-                  <a className="doc-link" href="/docs/campus-edu-documentation.txt" download>
-                    Documentation
-                  </a>
-                  <a className="doc-link doc-link--secondary" href="#guide">
-                    Guide Étudiant
-                  </a>
-                </nav>
-              </div>
-
-              <div className="version-panel" id="guide">
-                <div className="version-panel-head">
-                  <div>
-                    <div className="version-panel-kicker">Versions disponibles</div>
-                    <h4>Dernières mises à jour</h4>
+            <div className="lp-stage lp-rise" style={delay(200)}>
+              <PhoneTilt>
+                <div className="lp-phone">
+                  <div className="lp-phone-screen">
+                    <Image
+                      src="/app.jpg"
+                      alt="Écran de recherche de l'application Campus Edu Docs"
+                      width={720}
+                      height={1530}
+                      sizes="(min-width: 960px) 300px, 70vw"
+                      priority
+                    />
                   </div>
-                  <span className="status-pill">Live</span>
                 </div>
+              </PhoneTilt>
 
-                <div className="version-list">
-                  {versions.map((v) => (
-                    <div className="version-card" key={v.id}>
-                      <div className="version-card-info">
-                        <span className={`version-tag ${v.isCurrent ? "version-tag-current" : ""}`}>
-                          {v.isCurrent ? "Actuelle" : "Nouveau"}
-                        </span>
-                        <div className="version-card-text">
-                          <div className="version-card-title">Version {v.version}</div>
-                          <div className="version-card-sub">{v.subtitle}</div>
-                        </div>
+              <div className="lp-float lp-float--a" aria-hidden="true">
+                <span className="lp-float-icon">
+                  <IconSearch size={20} />
+                </span>
+                <div>
+                  <strong>Recherche rapide</strong>
+                  <small>Un titre, une matière</small>
+                </div>
+              </div>
+              <div className="lp-float lp-float--b" aria-hidden="true">
+                <span className="lp-float-icon">
+                  <IconFolderDown size={20} />
+                </span>
+                <div>
+                  <strong>Téléchargés</strong>
+                  <small>Vos fichiers, réunis</small>
+                </div>
+              </div>
+              <div className="lp-float lp-float--c" aria-hidden="true">
+                <span className="lp-float-icon lp-float-icon--ok">
+                  <IconShield size={20} />
+                </span>
+                <div>
+                  <strong>Accès public</strong>
+                  <small>Aucun compte requis</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="lp-ticker" aria-hidden="true">
+            <div className="lp-ticker-track">
+              {[0, 1].map((g) => (
+                <div className="lp-ticker-group" key={g} aria-hidden={g === 1 ? "true" : undefined}>
+                  {CHIPS.map((c) => (
+                    <span className="lp-chip" key={`${g}-${c}`}>
+                      <IconBook size={16} />
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------ */}
+        {/* Fonctionnalités                                               */}
+        {/* ------------------------------------------------------------ */}
+        <section className="lp-section lp-features" id="fonctionnalites">
+          <div className="lp-wrap">
+            <Reveal className="lp-head">
+              <span className="lp-eyebrow">Fonctionnalités</span>
+              <h2 className="lp-h2">Tout pour réviser, rien de superflu.</h2>
+              <p className="lp-sub">
+                Une application pensée pour retrouver vite le bon document, puis y revenir quand
+                vous en avez besoin.
+              </p>
+            </Reveal>
+
+            <div className="lp-bento">
+              <Reveal as="article" className="lp-card lp-card--dark lp-card--wide">
+                <span className="lp-card-icon">
+                  <IconSearch size={24} />
+                </span>
+                <h3>Trouvez le bon document en quelques secondes</h3>
+                <p>
+                  Tapez un titre ou une matière. Vos recherches récentes et fréquentes restent à
+                  portée de main pour revenir vite aux mêmes sujets.
+                </p>
+                <div className="lp-card-visual" aria-hidden="true">
+                  <div className="lp-mini-search">
+                    <IconSearch size={20} />
+                    Rechercher un document…
+                    <span className="lp-caret" />
+                  </div>
+                  <div className="lp-mini-chips">
+                    <span className="lp-mini-chip">
+                      <IconHistory size={16} />
+                      Mathématiques <b>3×</b>
+                    </span>
+                    <span className="lp-mini-chip">
+                      <IconHistory size={16} />
+                      Algorithmique <b>2×</b>
+                    </span>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal as="article" className="lp-card lp-card--mid" delay={80}>
+                <span className="lp-card-icon">
+                  <IconFile size={24} />
+                </span>
+                <h3>Cours et anciens examens au même endroit</h3>
+                <p>Supports de cours, sujets passés et ressources académiques de l&apos;université.</p>
+                <div className="lp-card-visual" aria-hidden="true">
+                  <div className="lp-sheets">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal as="article" className="lp-card" delay={0}>
+                <span className="lp-card-icon">
+                  <IconFilter size={24} />
+                </span>
+                <h3>Affinez avec les filtres</h3>
+                <p>Réduisez la liste pour ne garder que ce dont vous avez besoin.</p>
+                <div className="lp-card-visual" aria-hidden="true">
+                  <div className="lp-toggles">
+                    <span className="lp-toggle" data-on="true">
+                      Tous
+                    </span>
+                    <span className="lp-toggle">Cours</span>
+                    <span className="lp-toggle">Examens</span>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal as="article" className="lp-card" delay={80}>
+                <span className="lp-card-icon">
+                  <IconFolderDown size={24} />
+                </span>
+                <h3>Vos fichiers dans « Téléchargés »</h3>
+                <p>Retrouvez tout ce que vous avez enregistré, à côté de la recherche.</p>
+                <div className="lp-card-visual" aria-hidden="true">
+                  <div className="lp-tabs">
+                    <span className="lp-tab" data-on="true">
+                      <IconSearch size={18} />
+                      Recherche
+                    </span>
+                    <span className="lp-tab">
+                      <span className="lp-tab-badge">2</span>
+                      <IconFolderDown size={18} />
+                      Téléchargés
+                    </span>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal as="article" className="lp-card" delay={160}>
+                <span className="lp-card-icon">
+                  <IconShield size={24} />
+                </span>
+                <h3>Sans compte, sans mot de passe</h3>
+                <p>L&apos;accès est public : installez l&apos;APK et commencez à réviser.</p>
+                <div className="lp-card-visual" aria-hidden="true">
+                  <span className="lp-bigcheck">
+                    <IconCheck size={30} />
+                  </span>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------ */}
+        {/* Guide                                                         */}
+        {/* ------------------------------------------------------------ */}
+        <section className="lp-section lp-guide" id="guide">
+          <div className="lp-wrap">
+            <Reveal className="lp-head lp-head--center">
+              <span className="lp-eyebrow lp-eyebrow--dark">Guide étudiant</span>
+              <h2 className="lp-h2">Installée en trois étapes.</h2>
+              <p className="lp-sub">
+                Campus Edu s&apos;installe depuis un fichier APK. Voici comment faire, pas à pas.
+              </p>
+            </Reveal>
+
+            <ol className="lp-steps">
+              {STEPS.map((s, i) => (
+                <Reveal as="li" className="lp-step" delay={i * 90} key={s.title}>
+                  <span className="lp-step-num" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------ */}
+        {/* Téléchargement                                                */}
+        {/* ------------------------------------------------------------ */}
+        <section className="lp-section lp-download" id="telechargement">
+          <div className="lp-wrap lp-download-grid">
+            <Reveal className="lp-head">
+              <span className="lp-eyebrow">Téléchargement</span>
+              <h2 className="lp-h2">Installez Campus Edu sur votre téléphone.</h2>
+              <p className="lp-sub">
+                Téléchargez la dernière version sans compte, installez le fichier APK et accédez
+                tout de suite à vos ressources numériques.
+              </p>
+              <div className="lp-docs">
+                <a
+                  className="lp-btn lp-btn--outline"
+                  href="/docs/campus-edu-documentation.pdf"
+                  download
+                >
+                  <IconFile size={20} />
+                  Documentation (PDF)
+                </a>
+                <a className="lp-btn lp-btn--outline" href="#guide">
+                  Guide étudiant
+                </a>
+              </div>
+            </Reveal>
+
+            <Reveal delay={100}>
+              {current && (
+                <div className="lp-featured">
+                  <div className="lp-featured-top">
+                    <span className="lp-tag">
+                      <span className="lp-dot" aria-hidden="true" />
+                      Version actuelle
+                    </span>
+                    <span className="lp-featured-logo">
+                      <Image src="/logo.png" alt="" width={50} height={50} />
+                    </span>
+                  </div>
+                  <h3>v{current.version}</h3>
+                  <p>{current.subtitle}</p>
+                  <a className="lp-btn lp-btn--primary" href={current.apkUrl} download>
+                    <IconDownload size={22} />
+                    Télécharger l&apos;APK
+                  </a>
+                  <small>Fichier APK pour Android</small>
+                </div>
+              )}
+
+              {older.length > 0 && (
+                <div className="lp-older">
+                  <h4>Versions précédentes</h4>
+                  {older.map((v) => (
+                    <div className="lp-row" key={v.id}>
+                      <div>
+                        <strong>Version {v.version}</strong>
+                        <span>{v.subtitle}</span>
                       </div>
-                      <a className="version-card-btn" href={v.apkUrl} download>
-                        Télécharger
+                      <a href={v.apkUrl} download aria-label={`Télécharger la version ${v.version}`}>
+                        <IconDownload size={18} />
+                        APK
                       </a>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
+              )}
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------ */}
+        {/* FAQ                                                           */}
+        {/* ------------------------------------------------------------ */}
+        <section className="lp-section lp-faq" id="faq">
+          <div className="lp-wrap lp-faq-grid">
+            <Reveal className="lp-head">
+              <span className="lp-eyebrow">FAQ</span>
+              <h2 className="lp-h2">Questions fréquentes.</h2>
+              <p className="lp-sub">
+                Un doute avant d&apos;installer ? Les réponses aux questions les plus courantes.
+              </p>
+            </Reveal>
+
+            <Reveal delay={100}>
+              {FAQ.map((item) => (
+                <details className="lp-qa" key={item.q}>
+                  <summary>
+                    {item.q}
+                    <IconChevronDown size={22} />
+                  </summary>
+                  <p>{item.a}</p>
+                </details>
+              ))}
+            </Reveal>
           </div>
         </section>
       </main>
 
-      <footer>
-        <p>© {new Date().getFullYear()} Mbroumsadja Emmanuel — Tous droits réservés</p>
-      </footer>
+      {/* -------------------------------------------------------------- */}
+      {/* Appel final + pied de page                                      */}
+      {/* -------------------------------------------------------------- */}
+      <div className="lp-end">
+        <div className="lp-aurora" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+
+        <div className="lp-wrap lp-cta">
+          <Reveal>
+            <h2>Prêt à réviser plus efficacement&nbsp;?</h2>
+            <p>
+              Installez Campus Edu Docs et gardez vos cours et anciens examens dans votre poche.
+            </p>
+            <div className="lp-actions">
+              <a className="lp-btn lp-btn--primary" href="#telechargement">
+                <IconDownload size={20} />
+                Télécharger l&apos;APK
+              </a>
+            </div>
+          </Reveal>
+        </div>
+
+        <footer className="lp-footer">
+          <div className="lp-wrap lp-footer-grid">
+            <a className="lp-brand" href="#accueil" aria-label="Campus Edu, retour à l'accueil">
+              <span className="lp-brand-mark">
+                <Image src="/logo.png" alt="" width={40} height={40} />
+              </span>
+              <span className="lp-brand-word">
+                Campus <span>Edu</span>
+              </span>
+            </a>
+
+            <ul className="lp-footer-links">
+              <li>
+                <a href="#fonctionnalites">Fonctionnalités</a>
+              </li>
+              <li>
+                <a href="#guide">Guide étudiant</a>
+              </li>
+              <li>
+                <a href="#telechargement">Versions</a>
+              </li>
+              <li>
+                <a href="#faq">FAQ</a>
+              </li>
+            </ul>
+
+            <p className="lp-copy">
+              © {new Date().getFullYear()} Mbroumsadja Emmanuel. Tous droits réservés.
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

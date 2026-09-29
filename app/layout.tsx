@@ -1,10 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/sora";
 import "./globals.css";
+import "./landing.css";
 
 export const metadata: Metadata = {
-  title: "Campus educatif",
+  title: "Campus Edu Docs | Cours et examens de l'Université de Garoua",
   description:
     "Tous vos sujets d'examen et cours sont accessibles via cette application, directement depuis votre téléphone.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#050f1f",
 };
 
 export default function RootLayout({
