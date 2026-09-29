@@ -27,7 +27,7 @@ export default function UploadForm({ secret }: { secret: string }) {
       // 1) Upload direct navigateur -> Vercel Blob
       const blob = await upload(`apks/${version}.apk`, file, {
         access: "public",
-        handleUploadUrl: "/",
+        handleUploadUrl: "/api/admin/upload",
         clientPayload: secret,
         multipart: true,
         onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),

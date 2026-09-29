@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ADMIN_SECRET } from "@/lib/admin";
 import { getVersions } from "@/lib/versions";
 import UploadForm from "./upload-form";
 
@@ -9,9 +10,7 @@ export default async function AdminPage({
 }: {
   params: { secret: string };
 }) {
-  const adminSecret = process.env.ADMIN_SECRET || "campus2026";
-
-  if (!adminSecret || params.secret !== adminSecret) {
+  if (params.secret !== ADMIN_SECRET) {
     notFound();
   }
 
