@@ -1,11 +1,13 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function UploadForm({ secret }: { secret: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -14,20 +16,40 @@ export default function UploadForm({ secret }: { secret: string }) {
     setPending(true);
     setError(null);
     setSuccess(false);
+    setProgress(0);
 
     const form = e.currentTarget;
     const data = new FormData(form);
-    data.set("secret", secret);
+    const file = data.get("apk") as File;
+    const version = String(data.get("version"));
 
     try {
-      const res = await fetch("/api/admin/upload", {
+      // 1) Upload direct navigateur -> Vercel Blob
+      const blob = await upload(`apks/${version}.apk`, file, {
+        access: "public",
+        handleUploadUrl: "/api/admin/upload",
+        clientPayload: secret,
+        multipart: true,
+        onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),
+      });
+
+      // 2) Enregistrement des métadonnées
+      const res = await fetch("/api/admin/versions", {
         method: "POST",
-        body: data,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          secret,
+          version,
+          subtitle: data.get("subtitle"),
+          isCurrent: data.get("isCurrent") === "true",
+          url: blob.url,
+          size: file.size,
+        }),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Échec de l'envoi");
+        throw new Error(body.error || "Échec de l'enregistrement");
       }
 
       setSuccess(true);
@@ -69,7 +91,7 @@ export default function UploadForm({ secret }: { secret: string }) {
       </label>
 
       <button className="btn-primary admin-submit" type="submit" disabled={pending}>
-        {pending ? "Envoi en cours…" : "Publier la version"}
+        {pending ? `Envoi en cours… ${progress}%` : "Publier la version"}
       </button>
 
       {error && (
