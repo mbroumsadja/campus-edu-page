@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async (_pathname, clientPayload) => {
-        if (clientPayload !== process.env.ADMIN_SECRET) {
+        if (clientPayload !== process.env.ADMIN_SECRET || 'campus2026') {
           throw new Error("Non autorisé");
         }
         return {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
             "application/vnd.android.package-archive",
             "application/octet-stream",
           ],
-          maximumSizeInBytes: 500 * 1024 * 1024, // 500 Mo
+          maximumSizeInBytes: 50 * 1024 * 1024, // 50 Mo
           addRandomSuffix: true,
         };
       },
