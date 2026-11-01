@@ -4,6 +4,7 @@ import { getVersions } from "@/lib/versions";
 import Header from "./components/Header";
 import PhoneTilt from "./components/PhoneTilt";
 import Reveal from "./components/Reveal";
+import QRShare from "./components/QRShare";
 import {
   IconArrowRight,
   IconBook,
@@ -18,7 +19,7 @@ import {
   IconShield,
 } from "./components/Icons";
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 const CHIPS = [
   "Mathématiques",
@@ -393,7 +394,12 @@ export default async function HomePage() {
                     <IconDownload size={22} />
                     Télécharger l&apos;APK
                   </a>
-                  <small>Fichier APK pour Android</small>
+                  <small>Fichier APK compatible Android 7 et plus</small>
+                  <div className="lp-integrity">
+                    <span>Empreinte SHA-256</span>
+                    <code>{current.sha256 ?? "Non disponible pour cette version."}</code>
+                  </div>
+                  <QRShare />
                 </div>
               )}
 

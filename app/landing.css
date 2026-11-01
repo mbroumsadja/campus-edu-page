@@ -1243,6 +1243,74 @@
   text-align: center;
   font-size: 0.85rem;
 }
+.lp-integrity {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.lp-integrity span {
+  color: var(--on-dark-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.lp-integrity code {
+  color: #fff;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.lp-share {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.lp-qr {
+  display: grid;
+  place-items: center;
+  flex: 0 0 112px;
+  min-height: 112px;
+  padding: 6px;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--navy);
+  font-size: 0.72rem;
+  text-align: center;
+}
+.lp-qr img {
+  width: 100px;
+  height: 100px;
+}
+.lp-share-copy {
+  display: grid;
+  gap: 6px;
+  color: var(--on-dark-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.lp-share-copy strong {
+  color: #fff;
+  font-size: 0.95rem;
+}
+.lp-share-copy a {
+  width: fit-content;
+  margin-top: 4px;
+  color: #8bcaf7;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 .lp-older {
   margin-top: 20px;

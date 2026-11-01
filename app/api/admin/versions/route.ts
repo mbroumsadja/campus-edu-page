@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { del } from "@vercel/blob";
 import { ADMIN_SECRET } from "@/lib/admin";
 import { getVersions, saveVersions, type AppVersion } from "@/lib/versions";
 
 export async function POST(request: Request) {
-  const { secret, version, subtitle, isCurrent, url } = await request.json();
+  const { secret, version, subtitle, isCurrent, url, sha256 } = await request.json();
 
   if (secret !== ADMIN_SECRET) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
-  if (!version || !subtitle || !url) {
+  if (!version || !subtitle || !url || !/^[a-f0-9]{64}$/.test(sha256)) {
     return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
   }
 
@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       subtitle: String(subtitle),
       isCurrent: Boolean(isCurrent),
       apkUrl: String(url),
+      sha256,
       createdAt: new Date().toISOString(),
     };
 
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
 
     await saveVersions([entry, ...updated]);
 
+    revalidateTag("versions");
     revalidatePath("/");
     revalidatePath(`/admin/${secret}`);
 

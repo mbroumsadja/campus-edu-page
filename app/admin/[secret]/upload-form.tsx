@@ -1,6 +1,7 @@
 "use client";
 
 import { upload } from "@vercel/blob/client";
+import { createSHA256 } from "hash-wasm";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -8,6 +9,8 @@ export default function UploadForm({ secret }: { secret: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [hashing, setHashing] = useState(false);
+  const [hashProgress, setHashProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -17,6 +20,7 @@ export default function UploadForm({ secret }: { secret: string }) {
     setError(null);
     setSuccess(false);
     setProgress(0);
+    setHashProgress(0);
 
     const form = e.currentTarget;
     const data = new FormData(form);
@@ -24,6 +28,18 @@ export default function UploadForm({ secret }: { secret: string }) {
     const version = String(data.get("version"));
 
     try {
+      const hasher = await createSHA256();
+      hasher.init();
+      setHashing(true);
+      const chunkSize = 4 * 1024 * 1024;
+      for (let offset = 0; offset < file.size; offset += chunkSize) {
+        const chunk = await file.slice(offset, offset + chunkSize).arrayBuffer();
+        hasher.update(new Uint8Array(chunk));
+        setHashProgress(Math.round((Math.min(offset + chunkSize, file.size) / file.size) * 100));
+      }
+      const sha256 = hasher.digest("hex");
+      setHashing(false);
+
       // 1) Upload direct navigateur -> Vercel Blob
       const blob = await upload(`apks/${version}.apk`, file, {
         access: "public",
@@ -44,6 +60,7 @@ export default function UploadForm({ secret }: { secret: string }) {
           isCurrent: data.get("isCurrent") === "true",
           url: blob.url,
           size: file.size,
+          sha256,
         }),
       });
 
@@ -58,6 +75,7 @@ export default function UploadForm({ secret }: { secret: string }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inattendue");
     } finally {
+      setHashing(false);
       setPending(false);
     }
   }
@@ -91,7 +109,11 @@ export default function UploadForm({ secret }: { secret: string }) {
       </label>
 
       <button className="btn-primary admin-submit" type="submit" disabled={pending}>
-        {pending ? `Envoi en cours… ${progress}%` : "Publier la version"}
+        {pending
+          ? hashing
+            ? `Calcul de l'empreinte… ${hashProgress}%`
+            : `Envoi en cours… ${progress}%`
+          : "Publier la version"}
       </button>
 
       {error && (

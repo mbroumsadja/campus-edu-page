@@ -6,6 +6,7 @@ export type AppVersion = {
   subtitle: string;
   isCurrent: boolean;
   apkUrl: string;
+  sha256?: string;
   createdAt: string;
 };
 
@@ -29,7 +30,9 @@ export async function getVersions(): Promise<AppVersion[]> {
   try {
     const { blobs } = await list({ prefix: VERSIONS_KEY, limit: 1 });
     if (blobs.length === 0) return FALLBACK_VERSIONS;
-    const res = await fetch(blobs[0].url, { cache: "no-store" });
+    const res = await fetch(blobs[0].url, {
+      next: { revalidate: 60, tags: ["versions"] },
+    });
     if (!res.ok) return FALLBACK_VERSIONS;
     const data = (await res.json()) as AppVersion[];
     return data.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
