@@ -1,8 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { IconClose, IconDownload, IconMenu } from "./Icons";
+import { seDeconnecter } from "../../lib/campus";
+import { useSession } from "../../lib/useSession";
 
 const LINKS = [
   { id: "fonctionnalites", label: "Fonctionnalités" },
@@ -11,7 +14,11 @@ const LINKS = [
   { id: "faq", label: "FAQ" },
 ];
 
-export default function Header() {
+// Sur la page d'accueil les ancres restent sur la page ; ailleurs elles y renvoient.
+export default function Header({ home = false }: { home?: boolean }) {
+  const { pret, connecte, user } = useSession();
+  const surSupports = usePathname() === "/supports";
+  const ancre = (id: string) => (home ? `#${id}` : `/#${id}`);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
@@ -78,7 +85,7 @@ export default function Header() {
   return (
     <header className="lp-header" data-scrolled={scrolled} data-open={open}>
       <div className="lp-header-bar">
-        <a className="lp-brand" href="#accueil" onClick={close} aria-label="Campus Edu, retour à l'accueil">
+        <a className="lp-brand" href={ancre("accueil")} onClick={close} aria-label="Campus Edu, retour à l'accueil">
           <span className="lp-brand-mark">
             <Image src="/logo.png" alt="" width={40} height={40} priority />
           </span>
@@ -91,17 +98,34 @@ export default function Header() {
           {LINKS.map((l) => (
             <a
               key={l.id}
-              href={`#${l.id}`}
+              href={ancre(l.id)}
               aria-current={active === l.id ? "true" : undefined}
               data-active={active === l.id}
             >
               {l.label}
             </a>
           ))}
+          <a href="/supports" data-active={surSupports} aria-current={surSupports ? "page" : undefined}>
+            Supports
+          </a>
         </nav>
 
         <div className="lp-header-actions">
-          <a className="lp-btn lp-btn--primary lp-btn--sm lp-header-cta" href="#telechargement" onClick={close}>
+          {pret && connecte ? (
+            <button
+              type="button"
+              className="lp-btn lp-btn--ghost lp-btn--sm lp-header-login"
+              onClick={() => void seDeconnecter()}
+              title={user ? `${user.prenom} ${user.nom}` : undefined}
+            >
+              Déconnexion
+            </button>
+          ) : (
+            <a className="lp-btn lp-btn--ghost lp-btn--sm lp-header-login" href="/connexion">
+              Connexion
+            </a>
+          )}
+          <a className="lp-btn lp-btn--primary lp-btn--sm lp-header-cta" href={ancre("telechargement")} onClick={close}>
             <IconDownload size={18} />
             Télécharger
           </a>
@@ -123,7 +147,7 @@ export default function Header() {
           {LINKS.map((l, i) => (
             <a
               key={l.id}
-              href={`#${l.id}`}
+              href={ancre(l.id)}
               onClick={close}
               style={{ ["--d" as string]: `${80 + i * 50}ms` }}
               aria-current={active === l.id ? "true" : undefined}
@@ -131,11 +155,31 @@ export default function Header() {
               {l.label}
             </a>
           ))}
+          <a href="/supports" onClick={close} style={{ ["--d" as string]: `${80 + LINKS.length * 50}ms` }}>
+            Supports de cours
+          </a>
+          {pret && connecte ? (
+            <a
+              href="/connexion"
+              onClick={(e) => {
+                e.preventDefault();
+                close();
+                void seDeconnecter();
+              }}
+              style={{ ["--d" as string]: `${80 + (LINKS.length + 1) * 50}ms` }}
+            >
+              Déconnexion
+            </a>
+          ) : (
+            <a href="/connexion" onClick={close} style={{ ["--d" as string]: `${80 + (LINKS.length + 1) * 50}ms` }}>
+              Connexion
+            </a>
+          )}
           <a
             className="lp-btn lp-btn--primary lp-sheet-cta"
-            href="#telechargement"
+            href={ancre("telechargement")}
             onClick={close}
-            style={{ ["--d" as string]: `${80 + LINKS.length * 50}ms` }}
+            style={{ ["--d" as string]: `${80 + (LINKS.length + 2) * 50}ms` }}
           >
             <IconDownload size={20} />
             Télécharger l&apos;APK

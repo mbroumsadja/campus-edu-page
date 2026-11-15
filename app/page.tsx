@@ -50,7 +50,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "Faut-il créer un compte ?",
-    a: "Non. L'accès est public : installez l'application, puis recherchez vos documents sans vous inscrire.",
+    a: "Pas pour les cours et les sujets d'examen, accessibles sans inscription dans l'application. Les supports de révision demandent un compte : créez-le sur cette page avec votre matricule, votre filière et votre niveau, puis connectez-vous pour les rechercher.",
   },
   {
     q: "Sur quels téléphones fonctionne l'application ?",
@@ -85,7 +85,7 @@ export default async function HomePage() {
         Aller au contenu
       </a>
 
-      <Header />
+      <Header home />
 
       <main>
         {/* ------------------------------------------------------------ */}
@@ -124,8 +124,8 @@ export default async function HomePage() {
                   <IconDownload size={20} />
                   Télécharger l&apos;APK
                 </a>
-                <a className="lp-btn lp-btn--ghost" href="#guide">
-                  Comment installer
+                <a className="lp-btn lp-btn--ghost" href="/inscription">
+                  Créer un compte
                   <IconArrowRight size={18} />
                 </a>
               </div>
@@ -133,7 +133,7 @@ export default async function HomePage() {
               <ul className="lp-trust lp-rise" style={delay(320)}>
                 <li>
                   <IconCheck size={18} />
-                  Accès public, sans compte
+                  Cours et sujets en accès libre
                 </li>
                 <li>
                   <IconCheck size={18} />
@@ -185,8 +185,8 @@ export default async function HomePage() {
                   <IconShield size={20} />
                 </span>
                 <div>
-                  <strong>Accès public</strong>
-                  <small>Aucun compte requis</small>
+                  <strong>Supports de cours</strong>
+                  <small>Avec un compte étudiant</small>
                 </div>
               </div>
             </div>
@@ -310,8 +310,8 @@ export default async function HomePage() {
                 <span className="lp-card-icon">
                   <IconShield size={24} />
                 </span>
-                <h3>Sans compte, sans mot de passe</h3>
-                <p>L&apos;accès est public : installez l&apos;APK et commencez à réviser.</p>
+                <h3>Supports de révision sur votre compte</h3>
+                <p>Créez un compte avec votre matricule pour rechercher les supports de votre filière et de votre niveau, sur la page web ou dans l&apos;application.</p>
                 <div className="lp-card-visual" aria-hidden="true">
                   <span className="lp-bigcheck">
                     <IconCheck size={30} />
@@ -358,7 +358,7 @@ export default async function HomePage() {
               <span className="lp-eyebrow">Téléchargement</span>
               <h2 className="lp-h2">Installez Campus Edu sur votre téléphone.</h2>
               <p className="lp-sub">
-                Téléchargez la dernière version sans compte, installez le fichier APK et accédez
+                Téléchargez la dernière version, installez le fichier APK et accédez
                 tout de suite à vos ressources numériques.
               </p>
               <div className="lp-docs">
@@ -473,6 +473,10 @@ export default async function HomePage() {
                 <IconDownload size={20} />
                 Télécharger l&apos;APK
               </a>
+              <a className="lp-btn lp-btn--ghost" href="/supports">
+                Rechercher les supports
+                <IconArrowRight size={18} />
+              </a>
             </div>
           </Reveal>
         </div>
@@ -500,6 +504,12 @@ export default async function HomePage() {
               </li>
               <li>
                 <a href="#faq">FAQ</a>
+              </li>
+              <li>
+                <a href="/supports">Supports</a>
+              </li>
+              <li>
+                <a href="/connexion">Connexion</a>
               </li>
             </ul>
 

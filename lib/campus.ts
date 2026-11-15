@@ -1,0 +1,279 @@
+// Client de l'API Campus Edu pour la page publique.
+// Les appels partent directement du navigateur (CORS autorisé côté backend), ce qui garde
+// l'IP réelle de l'étudiant pour les limiteurs. La session reste dans le navigateur.
+
+export const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "https://campus-edu-backend.vercel.app/api/v1"
+).replace(/\/+$/, "");
+
+const ACCESS_KEY = "campus.accessToken";
+const REFRESH_KEY = "campus.refreshToken";
+const USER_KEY = "campus.user";
+
+export type Filiere = { id: number; nom: string; code: string };
+export type Niveau = "L1" | "L2" | "L3" | "M1" | "M2";
+export const NIVEAUX: Niveau[] = ["L1", "L2", "L3", "M1", "M2"];
+
+export type Utilisateur = {
+  id: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  role: string;
+  niveau?: Niveau | null;
+  filiere?: Filiere | null;
+};
+
+export type SupportFichier = { id: number; nomFichierOriginal: string; tailleFichier: number };
+export type Support = {
+  id: number;
+  titre: string;
+  description?: string | null;
+  type: string;
+  anneAcademique?: string | null;
+  createdAt: string;
+  ue?: { id: number; code: string; intitule: string; niveau: string; semestre: string; filiere?: Filiere | null } | null;
+  enseignant?: { nom: string; prenom: string } | null;
+  fichiers?: SupportFichier[];
+};
+
+export class ApiError extends Error {
+  status: number;
+  fields: Record<string, string>;
+  constructor(message: string, status: number, fields: Record<string, string> = {}) {
+    super(message);
+    this.status = status;
+    this.fields = fields;
+  }
+}
+
+// ── Stockage de la session (localStorage, avec repli silencieux) ──────────
+const lire = (k: string): string | null => {
+  try {
+    return window.localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+};
+const ecrire = (k: string, v: string | null) => {
+  try {
+    if (v === null) window.localStorage.removeItem(k);
+    else window.localStorage.setItem(k, v);
+  } catch {
+    /* navigation privée : la session ne durera que le temps de la page */
+  }
+};
+
+let memoire: { access: string | null; refresh: string | null; user: Utilisateur | null } = {
+  access: null,
+  refresh: null,
+  user: null,
+};
+const SESSION_EVENT = "campus:session";
+const notifier = () => window.dispatchEvent(new Event(SESSION_EVENT));
+
+export const lireSession = () => {
+  if (typeof window === "undefined") return { access: null, refresh: null, user: null };
+  const access = lire(ACCESS_KEY) ?? memoire.access;
+  const refresh = lire(REFRESH_KEY) ?? memoire.refresh;
+  let user: Utilisateur | null = memoire.user;
+  const brut = lire(USER_KEY);
+  if (brut) {
+    try {
+      user = JSON.parse(brut) as Utilisateur;
+    } catch {
+      user = null;
+    }
+  }
+  return { access, refresh, user };
+};
+
+export const enregistrerSession = (access: string, refresh: string, user?: Utilisateur | null) => {
+  memoire = { access, refresh, user: user ?? memoire.user };
+  ecrire(ACCESS_KEY, access);
+  ecrire(REFRESH_KEY, refresh);
+  if (user) ecrire(USER_KEY, JSON.stringify(user));
+  notifier();
+};
+
+export const effacerSession = () => {
+  memoire = { access: null, refresh: null, user: null };
+  ecrire(ACCESS_KEY, null);
+  ecrire(REFRESH_KEY, null);
+  ecrire(USER_KEY, null);
+  notifier();
+};
+
+export const surChangementSession = (fn: () => void) => {
+  window.addEventListener(SESSION_EVENT, fn);
+  window.addEventListener("storage", fn); // autre onglet
+  return () => {
+    window.removeEventListener(SESSION_EVENT, fn);
+    window.removeEventListener("storage", fn);
+  };
+};
+
+// ── Requêtes ──────────────────────────────────────────────────────────────
+type Enveloppe<T> = { success: boolean; message?: string; data: T; pagination?: Pagination; errors?: unknown };
+export type Pagination = { total: number; page: number; limit: number; totalPages: number };
+
+const erreurDepuis = async (res: Response): Promise<ApiError> => {
+  let message = "Une erreur est survenue. Réessayez dans un instant.";
+  const fields: Record<string, string> = {};
+  try {
+    const corps = await res.json();
+    if (typeof corps?.message === "string") message = corps.message;
+    else if (typeof corps?.error === "string") message = corps.error;
+    const liste = Array.isArray(corps?.errors) ? corps.errors : [];
+    for (const e of liste) {
+      const champ = e?.field ?? e?.path ?? e?.param;
+      const msg = e?.message ?? e?.msg;
+      if (champ && msg && !fields[champ]) fields[champ] = String(msg);
+    }
+  } catch {
+    /* corps non JSON */
+  }
+  if (res.status === 429) message = message || "Trop de tentatives. Patientez un moment.";
+  return new ApiError(message, res.status, fields);
+};
+
+const reseau = () => new ApiError("Connexion impossible. Vérifiez votre réseau puis réessayez.", 0);
+
+let rafraichissement: Promise<boolean> | null = null;
+
+const rafraichir = (): Promise<boolean> => {
+  if (rafraichissement) return rafraichissement;
+  rafraichissement = (async () => {
+    const { refresh } = lireSession();
+    if (!refresh) return false;
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: refresh }),
+      });
+      if (!res.ok) return false;
+      const corps = (await res.json()) as Enveloppe<{ accessToken?: string; refreshToken?: string }>;
+      const { accessToken, refreshToken } = corps.data ?? {};
+      if (!accessToken || !refreshToken) return false;
+      enregistrerSession(accessToken, refreshToken);
+      return true;
+    } catch {
+      return false;
+    }
+  })().finally(() => {
+    rafraichissement = null;
+  });
+  return rafraichissement;
+};
+
+type Options = { method?: string; body?: unknown; auth?: boolean; signal?: AbortSignal };
+
+const appeler = async (chemin: string, opt: Options = {}, deuxieme = false): Promise<Response> => {
+  const { access } = lireSession();
+  const headers: Record<string, string> = {};
+  if (opt.body !== undefined) headers["Content-Type"] = "application/json";
+  if (opt.auth !== false && access) headers.Authorization = `Bearer ${access}`;
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${chemin}`, {
+      method: opt.method ?? "GET",
+      headers,
+      body: opt.body !== undefined ? JSON.stringify(opt.body) : undefined,
+      signal: opt.signal,
+    });
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") throw e;
+    throw reseau();
+  }
+  if (res.status === 401 && opt.auth !== false && !deuxieme) {
+    if (await rafraichir()) return appeler(chemin, opt, true);
+    effacerSession();
+  }
+  return res;
+};
+
+const json = async <T,>(chemin: string, opt?: Options): Promise<Enveloppe<T>> => {
+  const res = await appeler(chemin, opt);
+  if (!res.ok) throw await erreurDepuis(res);
+  return (await res.json()) as Enveloppe<T>;
+};
+
+// ── Services ──────────────────────────────────────────────────────────────
+type Ouverture = { accessToken: string; refreshToken: string; utilisateur: Utilisateur };
+
+export const seConnecter = async (matricule: string, password: string) => {
+  const { data } = await json<Ouverture>("/auth/login", {
+    method: "POST",
+    auth: false,
+    body: { matricule, password, appareil: "Page web" },
+  });
+  enregistrerSession(data.accessToken, data.refreshToken, data.utilisateur);
+  return data.utilisateur;
+};
+
+export type Inscription = {
+  matricule: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  filiere_id: number;
+  niveau: Niveau;
+  password: string;
+};
+
+export const sInscrire = async (champs: Inscription) => {
+  const { data, message } = await json<Partial<Ouverture> & { statut: "actif" | "en_attente" }>(
+    "/auth/register",
+    { method: "POST", auth: false, body: champs }
+  );
+  if (data.statut === "actif" && data.accessToken && data.refreshToken) {
+    enregistrerSession(data.accessToken, data.refreshToken, data.utilisateur);
+  }
+  return { statut: data.statut, message: message ?? "" };
+};
+
+export const seDeconnecter = async () => {
+  try {
+    await appeler("/auth/logout", { method: "POST", body: {} });
+  } catch {
+    /* on efface la session locale quoi qu'il arrive */
+  }
+  effacerSession();
+};
+
+export const listerFilieres = async () => (await json<Filiere[]>("/filieres", { auth: false })).data;
+
+export const rafraichirProfil = async () => {
+  const { data } = await json<Utilisateur>("/auth/me");
+  const { access, refresh } = lireSession();
+  if (access && refresh) enregistrerSession(access, refresh, data);
+  return data;
+};
+
+export type RechercheSupports = { search?: string; page?: number; limit?: number; type?: string };
+
+export const listerSupports = async (p: RechercheSupports, signal?: AbortSignal) => {
+  const q = new URLSearchParams({ categorie: "support", page: String(p.page ?? 1), limit: String(p.limit ?? 12) });
+  if (p.search) q.set("search", p.search);
+  if (p.type) q.set("type", p.type);
+  const res = await json<Support[]>(`/cours?${q}`, { signal });
+  return { supports: res.data, pagination: res.pagination as Pagination };
+};
+
+export const telecharger = async (support: Support, fichier?: SupportFichier) => {
+  const q = new URLSearchParams({ type: "cours", id: String(support.id) });
+  if (fichier) q.set("document_id", String(fichier.id));
+  const res = await appeler(`/search/documents/telecharger?${q}`);
+  if (!res.ok) throw await erreurDepuis(res);
+  const blob = await res.blob();
+  const nom = fichier?.nomFichierOriginal || `${support.titre}.pdf`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nom;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+};

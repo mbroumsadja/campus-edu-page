@@ -3,6 +3,7 @@ import "@fontsource-variable/inter";
 import "@fontsource-variable/sora";
 import "./globals.css";
 import "./landing.css";
+import "./espace.css";
 import PwaRegistration from "./components/PwaRegistration";
 
 const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL
