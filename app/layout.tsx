@@ -13,7 +13,7 @@ const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL
 export const metadata: Metadata = {
   title: "Campus Edu | Cours et sujets d'examen de l'Université de Garoua",
   description:
-    "Recherchez et téléchargez les cours et les sujets d'examen de l'Université de Garoua. Connectez-vous pour consulter les supports de révision de votre filière.",
+    "Recherchez et téléchargez les cours et les sujets d'examen de l'Université de Garoua.",
   ...(publicSiteUrl ? { metadataBase: publicSiteUrl } : {}),
   icons: [
     { rel: "icon", url: "/favicon.ico" },

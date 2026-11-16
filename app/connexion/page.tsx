@@ -14,7 +14,7 @@ export default function Connexion() {
   const [envoi, setEnvoi] = useState(false);
 
   useEffect(() => {
-    if (pret && connecte) window.location.replace("/supports");
+    if (pret && connecte) window.location.replace("/");
   }, [pret, connecte]);
 
   const soumettre = async (e: React.FormEvent) => {
@@ -24,7 +24,7 @@ export default function Connexion() {
     setEnvoi(true);
     try {
       await seConnecter(matricule.trim().toUpperCase(), password);
-      // la session enregistrée déclenche la redirection vers /supports
+      // la session enregistrée déclenche la redirection vers l'accueil
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : "Connexion impossible.");
       setEnvoi(false);

@@ -1,6 +1,6 @@
 # Campus Edu : page publique
 
-Recherche publique des cours et des sujets d'examen de l'Université de Garoua, avec inscription et connexion pour consulter les supports de révision. Le thème est celui de l'administration (charte Campus Edu v1.0 : Nuit, Azur, Ciel, Soleil, Sora et Inter).
+Recherche publique des cours et des sujets d'examen de l'Université de Garoua. Un compte étudiant peut être créé et la session reste ouverte dans le navigateur. Le thème est celui de l'administration (charte Campus Edu v1.0 : Nuit, Azur, Ciel, Soleil, Sora et Inter).
 
 ## Pages
 
@@ -9,7 +9,6 @@ Recherche publique des cours et des sujets d'examen de l'Université de Garoua, 
 | `/` | public | recherche des cours et sujets d'examen (texte, type, niveau) et téléchargement, sans compte |
 | `/inscription` | public | création d'un compte étudiant (matricule, e-mail, filière, niveau, mot de passe) |
 | `/connexion` | public | connexion par matricule |
-| `/supports` | connecté | recherche et téléchargement des supports de révision de la filière et du niveau de l'étudiant |
 
 La session reste dans le navigateur (`localStorage`) : le jeton d'accès est renouvelé automatiquement avec le refresh token. Les appels partent directement du navigateur vers l'API (`lib/campus.ts`).
 

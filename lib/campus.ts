@@ -24,19 +24,6 @@ export type Utilisateur = {
   filiere?: Filiere | null;
 };
 
-export type SupportFichier = { id: number; nomFichierOriginal: string; tailleFichier: number };
-export type Support = {
-  id: number;
-  titre: string;
-  description?: string | null;
-  type: string;
-  anneAcademique?: string | null;
-  createdAt: string;
-  ue?: { id: number; code: string; intitule: string; niveau: string; semestre: string; filiere?: Filiere | null } | null;
-  enseignant?: { nom: string; prenom: string } | null;
-  fichiers?: SupportFichier[];
-};
-
 export class ApiError extends Error {
   status: number;
   fields: Record<string, string>;
@@ -249,33 +236,6 @@ export const rafraichirProfil = async () => {
   const { access, refresh } = lireSession();
   if (access && refresh) enregistrerSession(access, refresh, data);
   return data;
-};
-
-export type RechercheSupports = { search?: string; page?: number; limit?: number; type?: string };
-
-export const listerSupports = async (p: RechercheSupports, signal?: AbortSignal) => {
-  const q = new URLSearchParams({ categorie: "support", page: String(p.page ?? 1), limit: String(p.limit ?? 12) });
-  if (p.search) q.set("search", p.search);
-  if (p.type) q.set("type", p.type);
-  const res = await json<Support[]>(`/cours?${q}`, { signal });
-  return { supports: res.data, pagination: res.pagination as Pagination };
-};
-
-export const telecharger = async (support: Support, fichier?: SupportFichier) => {
-  const q = new URLSearchParams({ type: "cours", id: String(support.id) });
-  if (fichier) q.set("document_id", String(fichier.id));
-  const res = await appeler(`/search/documents/telecharger?${q}`);
-  if (!res.ok) throw await erreurDepuis(res);
-  const blob = await res.blob();
-  const nom = fichier?.nomFichierOriginal || `${support.titre}.pdf`;
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = nom;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 };
 
 // ── Recherche publique (cours et sujets d'examen), sans compte ────────────

@@ -19,7 +19,7 @@ export default function Inscription() {
   const maj = (k: keyof typeof f) => (v: string) => setF((s) => ({ ...s, [k]: v }));
 
   useEffect(() => {
-    if (pret && connecte) window.location.replace("/supports");
+    if (pret && connecte) window.location.replace("/");
   }, [pret, connecte]);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function Inscription() {
   return (
     <AuthShell
       titre="Créer un compte"
-      intro="Votre filière et votre niveau déterminent les supports de révision que vous pouvez consulter."
+      intro="Quelques informations suffisent pour créer votre compte."
       pied={<>Déjà inscrit ? <a href="/connexion">Se connecter</a></>}
     >
       <form onSubmit={soumettre} noValidate>

@@ -3,8 +3,7 @@ import { Logo } from "./Logo";
 
 const POINTS = [
   "Cours et sujets d'examen en libre accès, sans compte",
-  "Supports de révision de votre filière et de votre niveau",
-  "Votre session reste ouverte sur cet appareil",
+  "Une session qui reste ouverte sur cet appareil",
 ];
 
 export default function AuthShell({

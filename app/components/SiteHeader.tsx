@@ -15,14 +15,11 @@ export default function SiteHeader() {
 
   const liens = [
     { href: "/", label: "Recherche", actif: chemin === "/" },
-    { href: "/supports", label: "Supports de révision", actif: chemin === "/supports" },
   ];
 
   const sortir = () => {
     fermer();
-    void seDeconnecter().then(() => {
-      if (chemin === "/supports") window.location.replace("/connexion");
-    });
+    void seDeconnecter();
   };
 
   return (
