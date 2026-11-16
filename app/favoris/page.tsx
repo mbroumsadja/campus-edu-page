@@ -43,7 +43,7 @@ function Contenu() {
                 d={d}
                 vue={prefs.vue}
                 favori={estFavori(d)}
-                basculerFavori={() => { snack("Retiré des favoris"); basculer(d); }}
+                basculerFavori={() => { basculer(d); snack("Retiré des favoris", { label: "Annuler", run: () => basculer(d) }); }}
                 surTelechargement={(x) => snack(`Téléchargement lancé : ${x.intitule_ue}`)}
                 surPartage={partager}
               />

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AppShell from "./AppShell";
 import DocCard from "./DocCard";
+import FeuilleDemande from "./FeuilleDemande";
 import FeuilleFiltres from "./FeuilleFiltres";
 import Squelettes from "./Squelettes";
 import { Mi } from "./Mi";
@@ -20,8 +21,6 @@ import {
 } from "../../lib/campus";
 import { useFavoris, usePrefs } from "../../lib/prefs";
 import { useSession } from "../../lib/useSession";
-
-const WHATSAPP = (process.env.NEXT_PUBLIC_WHATSAPP || "").replace(/\D/g, "");
 
 export function partager(d: DocumentPublic) {
   const texte = `${d.intitule_ue} (${d.code_ue}), ${d.nom} : ${urlTelechargement(d.lien_telechargement)}`;
@@ -45,6 +44,7 @@ function Contenu() {
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState("");
   const [feuille, setFeuille] = useState(false);
+  const [demande, setDemande] = useState(false);
   const [filieres, setFilieres] = useState<Filiere[]>([]);
   const ctrl = useRef<AbortController | null>(null);
 
@@ -120,8 +120,13 @@ function Contenu() {
 
   const telecharge = (d: DocumentPublic) => snack(`Téléchargement lancé : ${d.intitule_ue}`);
   const toggleFavori = (d: DocumentPublic) => {
-    snack(estFavori(d) ? "Retiré des favoris" : "Ajouté aux favoris");
-    basculer(d);
+    if (estFavori(d)) {
+      basculer(d);
+      snack("Retiré des favoris", { label: "Annuler", run: () => basculer(d) });
+    } else {
+      basculer(d);
+      snack("Ajouté aux favoris");
+    }
   };
 
   const entete = (
@@ -202,16 +207,12 @@ function Contenu() {
           <div className="empty">
             <span className="empty-icon"><Mi n="file" size={32} /></span>
             <h2>Aucun document trouvé</h2>
-            <p>Essayez un autre mot, ou retirez un filtre.</p>
+            <p>Essayez un autre mot, retirez un filtre, ou demandez le document à l&apos;administration.</p>
             <div className="empty-actions">
+              <button className="btn btn--primary" onClick={() => setDemande(true)}>Demander ce document</button>
               {nbFiltres > 0 || prefs.pourMoi ? (
-                <button className="btn btn--tonal" onClick={reinitialiser}>Retirer les filtres</button>
+                <button className="btn btn--text" onClick={reinitialiser}>Retirer les filtres</button>
               ) : null}
-              {WHATSAPP && (
-                <a className="btn btn--text" href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Bonjour, je cherche un document qui manque${texte ? ` : ${texte}` : ""}.`)}`} target="_blank" rel="noopener">
-                  Signaler un document manquant
-                </a>
-              )}
             </div>
           </div>
         )}
@@ -242,6 +243,11 @@ function Contenu() {
           </div>
         )}
         {chargement && docs.length > 0 && <p className="loading">Chargement…</p>}
+        {!chargement && !erreur && docs.length > 0 && (
+          <p className="manque">
+            Il manque un document ? <button type="button" onClick={() => setDemande(true)}>Faire une demande</button>
+          </p>
+        )}
       </section>
 
       <button type="button" className="fab" onClick={() => setFeuille(true)} aria-label="Ouvrir les filtres">
@@ -250,6 +256,7 @@ function Contenu() {
         {nbFiltres > 0 && <b className="fab-badge">{nbFiltres}</b>}
       </button>
 
+      <FeuilleDemande ouverte={demande} fermer={() => setDemande(false)} propose={texte} envoye={(m) => snack(m)} />
       <FeuilleFiltres ouverte={feuille} fermer={() => setFeuille(false)} prefs={prefs} filieres={filieres} maj={maj} reinitialiser={reinitialiser} />
     </AppShell>
   );

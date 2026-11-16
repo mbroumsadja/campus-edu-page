@@ -4,11 +4,11 @@ Recherche publique des cours et des sujets d'examen de l'Université de Garoua. 
 
 ## Pages
 
-Interface de type application Android (Material 3) : barre du haut, navigation du bas sur téléphone (rail latéral sur grand écran), bouton flottant « Filtres » avec feuille de filtres, snackbar.
+Interface de type application Android (Material 3, gestes et mouvement inspirés des principes d'Apple : retour immédiat au toucher, feuille de filtres qu'on peut attraper et renvoyer) : barre du haut, navigation du bas sur téléphone (rail latéral sur grand écran), bouton flottant « Filtres » avec feuille de filtres, snackbar.
 
 | Route | Accès | Rôle |
 |---|---|---|
-| `/` | public | derniers documents, puis recherche (texte, niveau, type, filière) ; affichage en grille ou en liste ; téléchargement et partage sans compte |
+| `/` | public | derniers documents, puis recherche (texte, niveau, type, filière) ; affichage en grille ou en liste ; téléchargement, partage et demande d'un document manquant (envoyée à l'administration), sans compte |
 | `/favoris` | public | documents mis en favoris, gardés sur l'appareil et séparés par compte |
 | `/compte` | public | profil et réglage « Mon niveau en premier » ; création de compte et connexion pour les visiteurs |
 | `/inscription` | public | création d'un compte étudiant (matricule, e-mail, filière, niveau, mot de passe) |
@@ -22,7 +22,6 @@ Un étudiant connecté démarre sur sa filière et son niveau (modifiable depuis
 |---|---|
 | `NEXT_PUBLIC_API_URL` | adresse de l'API, par défaut `https://campus-edu-backend.vercel.app/api/v1` |
 | `NEXT_PUBLIC_SITE_URL` | adresse publique de la page (métadonnées) |
-| `NEXT_PUBLIC_WHATSAPP` | numéro WhatsApp (chiffres, indicatif compris, ex. `237600000000`) pour le lien « Signaler un document manquant ». Sans valeur, le lien n'apparaît pas. |
 
 ## Côté backend
 

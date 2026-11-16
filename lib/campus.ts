@@ -285,3 +285,15 @@ export const rechercherDocuments = async (p: RechercheDocuments, signal?: AbortS
 
 // Les liens renvoyés par l'API sont relatifs à l'hôte du backend
 export const urlTelechargement = (lien: string) => `${API_URL.replace(/\/api\/v1$/, "")}${lien}`;
+
+// ── Demande d'un document manquant (envoyée à l'administration) ───────────
+export type DemandeDocument = { nom_cours: string; nom_etudiant?: string; message?: string; contact?: string };
+
+export const demanderDocument = async (d: DemandeDocument) => {
+  const corps: Record<string, string> = { type: "cours_demande", nom_cours: d.nom_cours };
+  if (d.nom_etudiant) corps.nom_etudiant = d.nom_etudiant;
+  if (d.message) corps.message = d.message;
+  if (d.contact) corps.contact = d.contact;
+  const res = await json<{ id: number | null }>("/demandes", { method: "POST", body: corps });
+  return res.message ?? "Demande reçue. Merci !";
+};

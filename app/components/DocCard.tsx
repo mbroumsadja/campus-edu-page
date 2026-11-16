@@ -18,7 +18,7 @@ export default function DocCard({ d, vue, favori, basculerFavori, surTelechargem
   const sujet = d.type_contenu === "sujet_examen";
   const genre = sujet ? `Sujet${d.type_epreuve ? ` ${d.type_epreuve}` : ""}` : "Cours";
   const fichier = `${sansExtension(d.nom)}${d.tag_ordre ? ` (${d.tag_ordre})` : ""}`;
-  const meta = `${d.filiere_nom} · ${d.niveau} · ${d.semestre}`;
+  const taille = d.taille_lisible && d.taille_lisible !== "Non disponible" ? d.taille_lisible : "";
   const lien = urlTelechargement(d.lien_telechargement);
 
   const boutonFavori = (
@@ -38,15 +38,19 @@ export default function DocCard({ d, vue, favori, basculerFavori, surTelechargem
     </button>
   );
 
+  const genreLigne = (
+    <span className="kind" data-k={sujet ? "sujet" : "cours"}>
+      {genre}
+    </span>
+  );
+
   if (vue === "liste") {
     return (
       <li className="row">
-        <span className={`row-lead row-lead--${sujet ? "sujet" : "cours"}`}>
-          <Mi n={sujet ? "exam" : "file"} />
-        </span>
+        <span className="row-lead"><Mi n={sujet ? "exam" : "file"} /></span>
         <div className="row-text">
           <h3>{d.intitule_ue}</h3>
-          <p>{genre}{d.annee_academique ? ` · ${d.annee_academique}` : ""}</p>
+          <p>{genreLigne}{d.annee_academique ? ` · ${d.annee_academique}` : ""}</p>
           <p className="row-file">{fichier}</p>
           {d.lien_corrige && (
             <a className="row-link" href={urlTelechargement(d.lien_corrige)} rel="noopener" onClick={() => surTelechargement(d)}>
@@ -67,19 +71,14 @@ export default function DocCard({ d, vue, favori, basculerFavori, surTelechargem
 
   return (
     <li className="tile">
-      <div className={`tile-media tile-media--${sujet ? "sujet" : "cours"}`}>
-        <span className="tile-code">{d.code_ue}</span>
-        <Mi n={sujet ? "exam" : "file"} size={22} />
-        <span className="tile-star">{boutonFavori}</span>
+      <div className="tile-top">
+        {genreLigne}
+        {boutonFavori}
       </div>
       <div className="tile-body">
         <h3>{d.intitule_ue}</h3>
-        <p className="tile-meta">{meta}</p>
-        <p className="tile-file" title={fichier}>{fichier}{d.taille_lisible && d.taille_lisible !== "Non disponible" ? ` · ${d.taille_lisible}` : ""}</p>
-        <div className="tags">
-          <span className={`pill pill--${sujet ? "sujet" : "cours"}`}>{genre}</span>
-          {d.annee_academique && <span className="pill pill--neutre tabular">{d.annee_academique}</span>}
-        </div>
+        <p className="tile-meta">{d.code_ue} · {d.filiere_nom} · {d.niveau} · {d.semestre}{d.annee_academique ? ` · ${d.annee_academique}` : ""}</p>
+        <p className="tile-file" title={fichier}>{fichier}{taille ? ` · ${taille}` : ""}</p>
       </div>
       <div className="tile-actions">
         <a className="btn btn--tonal tile-dl" href={lien} rel="noopener" onClick={() => surTelechargement(d)}>
