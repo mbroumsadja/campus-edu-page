@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AppShell from "../components/AppShell";
 import { Mi } from "../components/Mi";
-import { listerForfaits, mesAbonnements, rafraichirProfil, seDeconnecter, type EtatForfaits, type MonAbonnement } from "../../lib/campus";
+import { etatPaiement, listerForfaits, mesAbonnements, rafraichirProfil, seDeconnecter, type EtatForfaits, type MonAbonnement } from "../../lib/campus";
 import { usePrefs } from "../../lib/prefs";
 import { useSession } from "../../lib/useSession";
 
@@ -22,6 +22,36 @@ export default function Compte() {
     if (!pret || !connecte) return;
     listerForfaits().then(setForfaits).catch(() => {});
     mesAbonnements().then(setAbonnements).catch(() => {});
+  }, [pret, connecte]);
+
+  const [paiement, setPaiement] = useState<"" | "attente" | "reussi" | "echec">("");
+
+  // Retour de Fapshi : /compte?paiement=<id>. L'API vérifie chez Fapshi ; on réessaie quelques secondes.
+  useEffect(() => {
+    if (!pret || !connecte) return;
+    const id = new URLSearchParams(window.location.search).get("paiement");
+    if (!id) return;
+    let essais = 0;
+    let stop = false;
+    const verifier = async () => {
+      try {
+        const p = await etatPaiement(id);
+        if (stop) return;
+        if (p.statut === "reussi") {
+          setPaiement("reussi");
+          mesAbonnements().then(setAbonnements).catch(() => {});
+          window.history.replaceState(null, "", "/compte");
+          return;
+        }
+        if (p.statut !== "en_attente") return void (setPaiement("echec"), window.history.replaceState(null, "", "/compte"));
+      } catch {
+        /* réessai ci-dessous */
+      }
+      setPaiement("attente");
+      if (++essais < 12) setTimeout(verifier, 4000);
+    };
+    void verifier();
+    return () => { stop = true; };
   }, [pret, connecte]);
 
   const initiales = user ? `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase() : "";
@@ -57,6 +87,14 @@ export default function Compte() {
                 />
               </label>
             </div>
+
+            {paiement && (
+              <p className="paiement-etat" role="status" data-etat={paiement}>
+                {paiement === "reussi" && "Paiement confirmé. Votre forfait est actif."}
+                {paiement === "attente" && "Paiement en cours de confirmation. Cela peut prendre quelques instants."}
+                {paiement === "echec" && "Le paiement n'a pas abouti. Vous pouvez réessayer."}
+              </p>
+            )}
 
             {forfaits?.actifs && (
               <>

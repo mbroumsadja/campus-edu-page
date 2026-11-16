@@ -319,11 +319,16 @@ export type EtatForfaits = {
   actifs: boolean;
   libre_jusqu_au: string;
   instructions_paiement: string;
+  paiement_en_ligne?: boolean;
   forfaits: Forfait[];
 };
 export type MonAbonnement = { id: number; forfait_code: string; debut: string; fin: string };
 
 export const listerForfaits = async () => (await json<EtatForfaits>("/forfaits")).data;
+export const payerForfait = async (code: string) =>
+  (await json<{ paiement_id: number; lien: string }>("/paiements", { method: "POST", body: { forfait_code: code } })).data;
+export const etatPaiement = async (id: string | number) =>
+  (await json<{ id: number; statut: "en_attente" | "reussi" | "echoue" | "expire"; forfait_code: string }>(`/paiements/${id}`)).data;
 export const mesAbonnements = async () => (await json<MonAbonnement[]>("/forfaits/moi")).data;
 
 // ── Demande d'un document manquant (envoyée à l'administration) ───────────

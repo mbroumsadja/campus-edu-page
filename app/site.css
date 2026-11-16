@@ -252,3 +252,8 @@
 .forfait-ligne small { display: block; margin-top: 2px; color: var(--text-3); font-size: 0.85rem; }
 .forfait-etat { flex-shrink: 0; font-size: 0.85rem; font-weight: 600; color: var(--azur); }
 .compte-section { margin: 20px 0 8px; font-size: 0.95rem; color: var(--text-2); }
+
+.forfait-erreur { margin: 0 0 12px; color: #b3261e; font-size: 0.9rem; }
+.paiement-etat { margin: 16px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--brand-soft); color: var(--nuit); font-size: 0.92rem; }
+.paiement-etat[data-etat="reussi"] { background: #e3f4e8; }
+.paiement-etat[data-etat="echec"] { background: #fbe9e7; }
