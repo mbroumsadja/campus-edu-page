@@ -3,6 +3,7 @@ import "@fontsource-variable/inter";
 import "@fontsource-variable/sora";
 import "./globals.css";
 import "./site.css";
+import { SnackProvider } from "./components/Snack";
 
 const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
@@ -34,7 +35,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>
+        <SnackProvider>{children}</SnackProvider>
+      </body>
     </html>
   );
 }

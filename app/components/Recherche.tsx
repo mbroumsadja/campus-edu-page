@@ -1,34 +1,51 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { IconDownload, IconFile, IconSearch } from "./Icons";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import AppShell from "./AppShell";
+import DocCard from "./DocCard";
+import FeuilleFiltres from "./FeuilleFiltres";
+import Squelettes from "./Squelettes";
+import { Mi } from "./Mi";
+import { useSnack } from "./Snack";
 import {
   ApiError,
+  listerFilieres,
   NIVEAUX,
+  rafraichirProfil,
   rechercherDocuments,
   urlTelechargement,
   type DocumentPublic,
+  type Filiere,
   type Pagination,
 } from "../../lib/campus";
+import { useFavoris, usePrefs } from "../../lib/prefs";
+import { useSession } from "../../lib/useSession";
 
-type Genre = "" | "cours" | "sujet";
-const GENRES: { id: Genre; label: string }[] = [
-  { id: "", label: "Tout" },
-  { id: "cours", label: "Cours" },
-  { id: "sujet", label: "Sujets d'examen" },
-];
-const SUGGESTIONS = ["Algorithmique", "Analyse", "Anatomie", "Bases de données"];
+const WHATSAPP = (process.env.NEXT_PUBLIC_WHATSAPP || "").replace(/\D/g, "");
 
-export default function Recherche() {
+export function partager(d: DocumentPublic) {
+  const texte = `${d.intitule_ue} (${d.code_ue}), ${d.nom} : ${urlTelechargement(d.lien_telechargement)}`;
+  if (typeof navigator !== "undefined" && navigator.share) {
+    navigator.share({ title: d.intitule_ue, text: texte }).catch(() => {});
+  } else {
+    window.open(`https://wa.me/?text=${encodeURIComponent(texte)}`, "_blank", "noopener");
+  }
+}
+
+function Contenu() {
+  const snack = useSnack();
+  const { pret: sessionPrete, connecte, user } = useSession();
+  const { prefs, maj, pret: prefsPretes } = usePrefs();
+  const { basculer, estFavori } = useFavoris();
+
   const [saisie, setSaisie] = useState("");
   const [q, setQ] = useState("");
-  const [niveau, setNiveau] = useState("");
-  const [genre, setGenre] = useState<Genre>("");
   const [docs, setDocs] = useState<DocumentPublic[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
-  const [chargement, setChargement] = useState(false);
+  const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState("");
-  const [lance, setLance] = useState(false);
+  const [feuille, setFeuille] = useState(false);
+  const [filieres, setFilieres] = useState<Filiere[]>([]);
   const ctrl = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -36,7 +53,36 @@ export default function Recherche() {
     return () => clearTimeout(t);
   }, [saisie]);
 
-  const actif = q.length >= 2 || Boolean(niveau);
+  useEffect(() => {
+    if (sessionPrete && connecte) rafraichirProfil().catch(() => {});
+  }, [sessionPrete, connecte]);
+
+  useEffect(() => {
+    listerFilieres().then(setFilieres).catch(() => {});
+  }, []);
+
+  const monNiveau = connecte ? user?.niveau || "" : "";
+  const maFiliere = connecte ? user?.filiere?.id : undefined;
+  const pourMoiDispo = Boolean(monNiveau || maFiliere);
+
+  // Première connexion sur cet appareil : on démarre sur la filière et le niveau du compte
+  useEffect(() => {
+    if (!prefsPretes || !pourMoiDispo || !user) return;
+    const cle = `campus.pourMoiInit.${user.id}`;
+    try {
+      if (window.localStorage.getItem(cle)) return;
+      window.localStorage.setItem(cle, "1");
+    } catch {
+      return;
+    }
+    maj({ pourMoi: true });
+  }, [prefsPretes, pourMoiDispo, user, maj]);
+
+  // Critères réellement envoyés à l'API
+  const niveau = prefs.pourMoi && monNiveau ? monNiveau : prefs.niveau;
+  const filiereId = prefs.pourMoi && maFiliere ? maFiliere : prefs.filiere ? Number(prefs.filiere) : undefined;
+  const type = prefs.type;
+  const texte = q.length >= 2 ? q : "";
 
   const charger = useCallback(
     async (page: number, ajouter: boolean) => {
@@ -47,12 +93,11 @@ export default function Recherche() {
       setErreur("");
       try {
         const r = await rechercherDocuments(
-          { q: q.length >= 2 ? q : undefined, niveau: niveau || undefined, type: genre || undefined, page },
+          { q: texte || undefined, niveau: niveau || undefined, type: type || undefined, filiere_id: filiereId, page },
           c.signal
         );
         setDocs((d) => (ajouter ? [...d, ...r.documents] : r.documents));
         setPagination(r.pagination);
-        setLance(true);
         setChargement(false);
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
@@ -60,135 +105,156 @@ export default function Recherche() {
         setChargement(false);
       }
     },
-    [q, niveau, genre]
+    [texte, niveau, type, filiereId]
   );
 
   useEffect(() => {
-    if (actif) void charger(1, false);
-    else {
-      ctrl.current?.abort();
-      setDocs([]);
-      setPagination(null);
-      setLance(false);
-      setChargement(false);
-    }
-  }, [actif, charger]);
+    if (prefsPretes && sessionPrete) void charger(1, false);
+  }, [prefsPretes, sessionPrete, charger]);
 
-  const vide = lance && !chargement && !erreur && docs.length === 0;
+  const nbFiltres = (type ? 1 : 0) + (prefs.niveau ? 1 : 0) + (prefs.filiere ? 1 : 0);
+  const filtre = Boolean(texte || niveau || type || filiereId);
+  const reinitialiser = () => maj({ niveau: "", type: "", filiere: "", pourMoi: false });
+  const titreListe = useMemo(() => (filtre ? "Résultats" : "Derniers documents"), [filtre]);
+  const vide = !chargement && !erreur && docs.length === 0;
+
+  const telecharge = (d: DocumentPublic) => snack(`Téléchargement lancé : ${d.intitule_ue}`);
+  const toggleFavori = (d: DocumentPublic) => {
+    snack(estFavori(d) ? "Retiré des favoris" : "Ajouté aux favoris");
+    basculer(d);
+  };
+
+  const entete = (
+    <>
+      <form className="searchbar" role="search" onSubmit={(e) => e.preventDefault()}>
+        <Mi n="search" />
+        <label className="sr-only" htmlFor="q">Rechercher un cours ou un sujet</label>
+        <input
+          id="q"
+          type="search"
+          value={saisie}
+          onChange={(e) => setSaisie(e.target.value)}
+          placeholder="Matière, code d'UE, filière"
+          autoComplete="off"
+          enterKeyHint="search"
+        />
+        {saisie && (
+          <button type="button" className="icon-btn" aria-label="Effacer la recherche" onClick={() => setSaisie("")}>
+            <Mi n="close" />
+          </button>
+        )}
+      </form>
+      <div className="chips-row" role="group" aria-label="Filtres rapides">
+        {pourMoiDispo && (
+          <button type="button" className="chip chip--accent" aria-pressed={prefs.pourMoi} onClick={() => maj({ pourMoi: !prefs.pourMoi })}>
+            {prefs.pourMoi && <Mi n="check" size={18} />}
+            Mon niveau{monNiveau ? ` ${monNiveau}` : ""}
+          </button>
+        )}
+        {NIVEAUX.map((n) => (
+          <button key={n} type="button" className="chip" aria-pressed={prefs.niveau === n && !prefs.pourMoi} onClick={() => maj({ niveau: prefs.niveau === n ? "" : n, pourMoi: false })}>
+            {prefs.niveau === n && !prefs.pourMoi && <Mi n="check" size={18} />}
+            {n}
+          </button>
+        ))}
+        <button type="button" className="chip" aria-pressed={type === "cours"} onClick={() => maj({ type: type === "cours" ? "" : "cours" })}>
+          {type === "cours" && <Mi n="check" size={18} />}
+          Cours
+        </button>
+        <button type="button" className="chip" aria-pressed={type === "sujet"} onClick={() => maj({ type: type === "sujet" ? "" : "sujet" })}>
+          {type === "sujet" && <Mi n="check" size={18} />}
+          Sujets
+        </button>
+      </div>
+    </>
+  );
 
   return (
-    <>
-      <section className="hero">
-        <div className="wrap">
-          <span className="eyebrow">Université de Garoua</span>
-          <h1>Vos cours et sujets d&apos;examen, en libre accès.</h1>
-          <p className="hero-sub">Recherchez un document, téléchargez-le. Aucun compte n&apos;est nécessaire.</p>
-
-          <form className="search" role="search" onSubmit={(e) => e.preventDefault()}>
-            <IconSearch size={22} />
-            <label className="sr-only" htmlFor="q">Rechercher un cours ou un sujet</label>
-            <input
-              id="q"
-              type="search"
-              value={saisie}
-              onChange={(e) => setSaisie(e.target.value)}
-              placeholder="Une matière, un code d'UE, une filière…"
-              autoComplete="off"
-              enterKeyHint="search"
-            />
-          </form>
-
-          <div className="filters">
-            <div className="seg" role="group" aria-label="Type de document">
-              {GENRES.map((g) => (
-                <button key={g.id} type="button" aria-pressed={genre === g.id} onClick={() => setGenre(g.id)}>
-                  {g.label}
-                </button>
-              ))}
-            </div>
-            <div className="seg" role="group" aria-label="Niveau">
-              <button type="button" aria-pressed={niveau === ""} onClick={() => setNiveau("")}>Tous niveaux</button>
-              {NIVEAUX.map((n) => (
-                <button key={n} type="button" aria-pressed={niveau === n} onClick={() => setNiveau(niveau === n ? "" : n)}>
-                  {n}
-                </button>
-              ))}
-            </div>
+    <AppShell entete={entete}>
+      <section className="results" aria-live="polite">
+        <div className="results-head">
+          <div>
+            <h1>{titreListe}</h1>
+            {pagination && !chargement && !erreur && docs.length > 0 && (
+              <p className="count">{pagination.total} document{pagination.total > 1 ? "s" : ""}</p>
+            )}
+          </div>
+          <div className="toggle" role="group" aria-label="Affichage">
+            <button type="button" aria-pressed={prefs.vue === "grille"} onClick={() => maj({ vue: "grille" })} aria-label="Affichage en grille">
+              <Mi n="grid" />
+            </button>
+            <button type="button" aria-pressed={prefs.vue === "liste"} onClick={() => maj({ vue: "liste" })} aria-label="Affichage en liste">
+              <Mi n="list" />
+            </button>
           </div>
         </div>
-      </section>
-
-      <section className="results wrap" aria-live="polite" id="resultats">
-        {!actif && (
-          <div className="empty">
-            <IconSearch size={30} />
-            <p>Saisissez au moins deux lettres, ou choisissez un niveau, pour lancer la recherche.</p>
-            <div className="chips">
-              {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => setSaisie(s)}>{s}</button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {erreur && (
           <div className="empty">
+            <span className="empty-icon"><Mi n="close" size={32} /></span>
+            <h2>Recherche impossible</h2>
             <p>{erreur}</p>
-            <button className="btn btn--outline" onClick={() => void charger(1, false)}>Réessayer</button>
+            <button className="btn btn--tonal" onClick={() => void charger(1, false)}>Réessayer</button>
           </div>
         )}
 
         {vide && (
           <div className="empty">
-            <IconFile size={30} />
-            <p>Aucun document ne correspond à cette recherche.</p>
+            <span className="empty-icon"><Mi n="file" size={32} /></span>
+            <h2>Aucun document trouvé</h2>
+            <p>Essayez un autre mot, ou retirez un filtre.</p>
+            <div className="empty-actions">
+              {nbFiltres > 0 || prefs.pourMoi ? (
+                <button className="btn btn--tonal" onClick={reinitialiser}>Retirer les filtres</button>
+              ) : null}
+              {WHATSAPP && (
+                <a className="btn btn--text" href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Bonjour, je cherche un document qui manque${texte ? ` : ${texte}` : ""}.`)}`} target="_blank" rel="noopener">
+                  Signaler un document manquant
+                </a>
+              )}
+            </div>
           </div>
         )}
 
-        {actif && lance && !erreur && docs.length > 0 && pagination && (
-          <p className="count">
-            {pagination.total} document{pagination.total > 1 ? "s" : ""}
-          </p>
+        {chargement && docs.length === 0 && !erreur && <Squelettes vue={prefs.vue} />}
+
+        {docs.length > 0 && !erreur && (
+          <ul className={prefs.vue === "grille" ? "tiles" : "rows"} data-busy={chargement}>
+            {docs.map((d) => (
+              <DocCard
+                key={`${d.type_contenu}-${d.id}`}
+                d={d}
+                vue={prefs.vue}
+                favori={estFavori(d)}
+                basculerFavori={() => toggleFavori(d)}
+                surTelechargement={telecharge}
+                surPartage={partager}
+              />
+            ))}
+          </ul>
         )}
 
-        <ul className="grid">
-          {docs.map((d) => (
-            <li className="doc" key={`${d.type_contenu}-${d.id}`}>
-              <div className="doc-top">
-                <span className={`pill pill--${d.type_contenu === "cours" ? "cours" : "sujet"}`}>
-                  {d.type_contenu === "cours" ? "Cours" : `Sujet ${d.type_epreuve ?? ""}`.trim()}
-                </span>
-                {d.annee_academique && <span className="doc-year tabular">{d.annee_academique}</span>}
-              </div>
-              <h2>{d.nom}{d.tag_ordre ? ` (${d.tag_ordre})` : ""}</h2>
-              <p className="doc-meta">{d.code_ue} · {d.intitule_ue}</p>
-              <p className="doc-meta">{d.filiere_nom} · {d.niveau} · {d.semestre}</p>
-              <div className="doc-actions">
-                <a className="dl" href={urlTelechargement(d.lien_telechargement)} rel="noopener">
-                  <IconDownload size={18} />
-                  <span>Télécharger</span>
-                  {d.taille_lisible && d.taille_lisible !== "Non disponible" && <small>{d.taille_lisible}</small>}
-                </a>
-                {d.lien_corrige && (
-                  <a className="dl dl--alt" href={urlTelechargement(d.lien_corrige)} rel="noopener">
-                    <IconDownload size={18} />
-                    <span>Corrigé</span>
-                  </a>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        {chargement && <p className="loading">Recherche en cours…</p>}
         {!chargement && pagination && pagination.page < pagination.totalPages && (
           <div className="more">
-            <button className="btn btn--outline" onClick={() => void charger(pagination.page + 1, true)}>
+            <button className="btn btn--tonal" onClick={() => void charger(pagination.page + 1, true)}>
               Afficher plus
             </button>
           </div>
         )}
+        {chargement && docs.length > 0 && <p className="loading">Chargement…</p>}
       </section>
-    </>
+
+      <button type="button" className="fab" onClick={() => setFeuille(true)} aria-label="Ouvrir les filtres">
+        <Mi n="tune" />
+        <span>Filtres</span>
+        {nbFiltres > 0 && <b className="fab-badge">{nbFiltres}</b>}
+      </button>
+
+      <FeuilleFiltres ouverte={feuille} fermer={() => setFeuille(false)} prefs={prefs} filieres={filieres} maj={maj} reinitialiser={reinitialiser} />
+    </AppShell>
   );
+}
+
+export default function Recherche() {
+  return <Contenu />;
 }

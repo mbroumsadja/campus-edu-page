@@ -260,13 +260,22 @@ export type DocumentPublic = {
   annee_academique?: string | null;
 };
 
-export type RechercheDocuments = { q?: string; niveau?: string; type?: "cours" | "sujet"; page?: number };
+export type RechercheDocuments = {
+  q?: string;
+  niveau?: string;
+  type?: "cours" | "sujet";
+  filiere_id?: number;
+  page?: number;
+};
 
+// Sans critère, l'API renvoie les derniers documents publiés (recents=1)
 export const rechercherDocuments = async (p: RechercheDocuments, signal?: AbortSignal) => {
   const q = new URLSearchParams({ page: String(p.page ?? 1), limit: "12" });
   if (p.q) q.set("q", p.q);
   if (p.niveau) q.set("niveau", p.niveau);
   if (p.type) q.set("type", p.type);
+  if (p.filiere_id) q.set("filiere_id", String(p.filiere_id));
+  if (!p.q && !p.niveau && !p.type && !p.filiere_id) q.set("recents", "1");
   const res = await json<{ documents: DocumentPublic[]; nombre_resultats: number; pagination: Pagination }>(
     `/search/documents?${q}`,
     { auth: false, signal }
