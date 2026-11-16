@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Header from "../components/Header";
+import SiteHeader from "../components/SiteHeader";
+import SiteFooter from "../components/SiteFooter";
 import { IconDownload, IconFile, IconSearch } from "../components/Icons";
 import {
   ApiError,
@@ -85,9 +86,9 @@ export default function Supports() {
 
   if (!pret || !connecte) {
     return (
-      <div className="lp es-page">
-        <Header />
-        <main className="es-loading">Chargement…</main>
+      <div className="page">
+        <SiteHeader />
+        <main className="shell-loading">Chargement…</main>
       </div>
     );
   }
@@ -95,26 +96,21 @@ export default function Supports() {
   const vide = !chargement && !erreur && liste.length === 0;
 
   return (
-    <div className="lp es-page">
-      <Header />
+    <div className="page">
+      <SiteHeader />
       <main>
-        <section className="es-hero">
-          <div className="lp-aurora" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
-          <div className="lp-wrap">
-            <span className="lp-eyebrow lp-eyebrow--dark">Supports de cours</span>
+        <section className="hero hero--compact">
+          <div className="wrap">
+            <span className="eyebrow">Supports de cours</span>
             <h1>Bonjour{user ? `, ${user.prenom}` : ""}.</h1>
-            <p>
+            <p className="hero-sub">
               {user?.filiere?.nom && user?.niveau
                 ? `Filière ${user.filiere.nom}, niveau ${user.niveau}.`
                 : "Recherchez un support par titre."}
             </p>
-            <form className="es-search" role="search" onSubmit={(e) => e.preventDefault()}>
+            <form className="search" role="search" onSubmit={(e) => e.preventDefault()}>
               <IconSearch size={22} />
-              <label className="es-sr" htmlFor="q">Rechercher un support</label>
+              <label className="sr-only" htmlFor="q">Rechercher un support</label>
               <input
                 id="q"
                 type="search"
@@ -127,42 +123,42 @@ export default function Supports() {
           </div>
         </section>
 
-        <section className="es-results lp-wrap" aria-live="polite">
-          {avis && <p className="es-alert" role="alert">{avis}</p>}
+        <section className="results wrap" aria-live="polite">
+          {avis && <p className="alert" role="alert">{avis}</p>}
           {erreur && (
-            <div className="es-empty">
+            <div className="empty">
               <p>{erreur}</p>
-              <button className="lp-btn lp-btn--outline" onClick={() => void charger(1, false)}>Réessayer</button>
+              <button className="btn btn--outline" onClick={() => void charger(1, false)}>Réessayer</button>
             </div>
           )}
           {vide && (
-            <div className="es-empty">
+            <div className="empty">
               <IconFile size={32} />
               <p>{recherche ? `Aucun support ne correspond à « ${recherche} ».` : "Aucun support publié pour votre filière et votre niveau."}</p>
             </div>
           )}
 
-          <ul className="es-list">
+          <ul className="grid">
             {liste.map((s) => (
-              <li className="es-item" key={s.id}>
-                <div className="es-item-top">
-                  <span className="es-pill">{s.ue?.code ?? s.type.toUpperCase()}</span>
-                  {s.anneAcademique && <span className="es-year">{s.anneAcademique}</span>}
+              <li className="doc" key={s.id}>
+                <div className="doc-top">
+                  <span className="pill pill--cours">{s.ue?.code ?? s.type.toUpperCase()}</span>
+                  {s.anneAcademique && <span className="doc-year tabular">{s.anneAcademique}</span>}
                 </div>
                 <h2>{s.titre}</h2>
-                <p className="es-meta">
+                <p className="doc-meta">
                   {[s.ue?.intitule, s.ue?.semestre, s.enseignant ? `${s.enseignant.prenom} ${s.enseignant.nom}` : null]
                     .filter(Boolean)
                     .join(" · ")}
                 </p>
-                <div className="es-files">
+                <div className="doc-actions">
                   {(s.fichiers?.length ? s.fichiers : [undefined]).map((f) => {
                     const cle = `${s.id}-${f?.id ?? 0}`;
                     return (
                       <button
                         key={cle}
                         type="button"
-                        className="es-dl"
+                        className="dl"
                         onClick={() => void prendre(s, f)}
                         disabled={telechargement === cle}
                       >
@@ -177,16 +173,17 @@ export default function Supports() {
             ))}
           </ul>
 
-          {chargement && <p className="es-loading-inline">Chargement…</p>}
+          {chargement && <p className="loading">Chargement…</p>}
           {!chargement && pagination && pagination.page < pagination.totalPages && (
-            <div className="es-more">
-              <button className="lp-btn lp-btn--outline" onClick={() => void charger(pagination.page + 1, true)}>
+            <div className="more">
+              <button className="btn btn--outline" onClick={() => void charger(pagination.page + 1, true)}>
                 Afficher plus
               </button>
             </div>
           )}
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

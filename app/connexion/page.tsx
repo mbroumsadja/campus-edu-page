@@ -34,14 +34,14 @@ export default function Connexion() {
   return (
     <AuthShell
       titre="Connexion"
-      intro="Connectez-vous pour rechercher les supports de cours de votre filière."
+      intro="Entrez votre matricule et votre mot de passe."
       pied={<>Pas encore de compte ? <a href="/inscription">Créer un compte</a></>}
     >
       <form onSubmit={soumettre} noValidate>
-        <Champ id="matricule" label="Matricule" value={matricule} onChange={setMatricule} autoComplete="username" maxLength={20} />
-        <Champ id="password" label="Mot de passe" type="password" value={password} onChange={setPassword} autoComplete="current-password" />
-        {erreur && <p className="es-alert" role="alert">{erreur}</p>}
-        <button className="lp-btn lp-btn--primary es-submit" type="submit" disabled={envoi || !matricule || !password}>
+        <Champ id="matricule" label="Matricule" value={matricule} onChange={setMatricule} autoComplete="username" maxLength={20} placeholder="ex : 24FS1234" mono aide="Étudiant : XXFSxxxx" />
+        <Champ id="password" label="Mot de passe" type="password" value={password} onChange={setPassword} autoComplete="current-password" placeholder="Votre mot de passe" />
+        {erreur && <p className="alert" role="alert">{erreur}</p>}
+        <button className="btn btn--primary au-submit" type="submit" disabled={envoi || !matricule || !password}>
           {envoi ? "Connexion…" : "Se connecter"}
         </button>
       </form>

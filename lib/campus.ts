@@ -277,3 +277,42 @@ export const telecharger = async (support: Support, fichier?: SupportFichier) =>
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 };
+
+// ── Recherche publique (cours et sujets d'examen), sans compte ────────────
+export type DocumentPublic = {
+  id: number;
+  cours_id?: number;
+  type_contenu: "cours" | "sujet_examen";
+  nom: string;
+  tag_ordre?: string | null;
+  type: string;
+  type_epreuve?: string | null;
+  session?: string | null;
+  avec_corrige?: boolean;
+  lien_telechargement: string;
+  lien_corrige?: string | null;
+  taille_lisible?: string;
+  niveau: string;
+  semestre: string;
+  filiere_nom: string;
+  code_ue: string;
+  intitule_ue: string;
+  annee_academique?: string | null;
+};
+
+export type RechercheDocuments = { q?: string; niveau?: string; type?: "cours" | "sujet"; page?: number };
+
+export const rechercherDocuments = async (p: RechercheDocuments, signal?: AbortSignal) => {
+  const q = new URLSearchParams({ page: String(p.page ?? 1), limit: "12" });
+  if (p.q) q.set("q", p.q);
+  if (p.niveau) q.set("niveau", p.niveau);
+  if (p.type) q.set("type", p.type);
+  const res = await json<{ documents: DocumentPublic[]; nombre_resultats: number; pagination: Pagination }>(
+    `/search/documents?${q}`,
+    { auth: false, signal }
+  );
+  return res.data;
+};
+
+// Les liens renvoyés par l'API sont relatifs à l'hôte du backend
+export const urlTelechargement = (lien: string) => `${API_URL.replace(/\/api\/v1$/, "")}${lien}`;

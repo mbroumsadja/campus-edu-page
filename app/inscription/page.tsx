@@ -66,7 +66,7 @@ export default function Inscription() {
   if (attente) {
     return (
       <AuthShell titre="Compte créé" intro={attente} pied={<><a href="/connexion">Aller à la connexion</a></>}>
-        <p className="es-alert es-alert--ok">Vous pourrez vous connecter dès que l&apos;administration aura validé votre compte.</p>
+        <p className="alert alert--ok">Vous pourrez vous connecter dès que l&apos;administration aura validé votre compte.</p>
       </AuthShell>
     );
   }
@@ -74,20 +74,20 @@ export default function Inscription() {
   return (
     <AuthShell
       titre="Créer un compte"
-      intro="Votre filière et votre niveau déterminent les supports que vous pouvez consulter."
+      intro="Votre filière et votre niveau déterminent les supports de révision que vous pouvez consulter."
       pied={<>Déjà inscrit ? <a href="/connexion">Se connecter</a></>}
     >
       <form onSubmit={soumettre} noValidate>
-        <div className="es-row">
+        <div className="fd-row">
           <Champ id="prenom" label="Prénom" value={f.prenom} onChange={maj("prenom")} autoComplete="given-name" erreur={champs.prenom} />
           <Champ id="nom" label="Nom" value={f.nom} onChange={maj("nom")} autoComplete="family-name" erreur={champs.nom} />
         </div>
-        <Champ id="matricule" label="Matricule" value={f.matricule} onChange={maj("matricule")} autoComplete="username" maxLength={20} erreur={champs.matricule} aide="Exemple : 24FS1234" />
-        <Champ id="email" label="Adresse e-mail" type="email" inputMode="email" value={f.email} onChange={maj("email")} autoComplete="email" erreur={champs.email} />
-        <div className="es-row">
-          <div className="es-field" data-error={Boolean(champs.filiere_id)}>
+        <Champ id="matricule" label="Matricule" value={f.matricule} onChange={maj("matricule")} autoComplete="username" maxLength={20} erreur={champs.matricule} placeholder="ex : 24FS1234" mono aide="Le matricule de votre carte étudiant, sans tiret." />
+        <Champ id="email" label="Adresse e-mail" type="email" inputMode="email" value={f.email} onChange={maj("email")} autoComplete="email" erreur={champs.email} placeholder="vous@exemple.com" aide="Une adresse que vous consultez régulièrement." />
+        <div className="fd-row">
+          <div className="fd" data-error={Boolean(champs.filiere_id)}>
             <label htmlFor="filiere">Filière</label>
-            <div className="es-input">
+            <div className="fd-input">
               <select id="filiere" value={f.filiere} onChange={(e) => maj("filiere")(e.target.value)} disabled={chargement} aria-invalid={Boolean(champs.filiere_id)}>
                 <option value="">{chargement ? "Chargement…" : "Choisir"}</option>
                 {filieres.map((x) => (
@@ -95,11 +95,11 @@ export default function Inscription() {
                 ))}
               </select>
             </div>
-            {champs.filiere_id && <small className="es-err" role="alert">{champs.filiere_id}</small>}
+            {champs.filiere_id && <small className="fd-err" role="alert">{champs.filiere_id}</small>}
           </div>
-          <div className="es-field" data-error={Boolean(champs.niveau)}>
+          <div className="fd" data-error={Boolean(champs.niveau)}>
             <label htmlFor="niveau">Niveau</label>
-            <div className="es-input">
+            <div className="fd-input">
               <select id="niveau" value={f.niveau} onChange={(e) => maj("niveau")(e.target.value)} aria-invalid={Boolean(champs.niveau)}>
                 <option value="">Choisir</option>
                 {NIVEAUX.map((n) => (
@@ -107,12 +107,12 @@ export default function Inscription() {
                 ))}
               </select>
             </div>
-            {champs.niveau && <small className="es-err" role="alert">{champs.niveau}</small>}
+            {champs.niveau && <small className="fd-err" role="alert">{champs.niveau}</small>}
           </div>
         </div>
-        <Champ id="password" label="Mot de passe" type="password" value={f.password} onChange={maj("password")} autoComplete="new-password" erreur={champs.password} aide="8 caractères minimum" />
-        {erreur && <p className="es-alert" role="alert">{erreur}</p>}
-        <button className="lp-btn lp-btn--primary es-submit" type="submit" disabled={envoi}>
+        <Champ id="password" label="Mot de passe" type="password" value={f.password} onChange={maj("password")} autoComplete="new-password" erreur={champs.password} aide="8 caractères minimum." placeholder="Choisissez un mot de passe" />
+        {erreur && <p className="alert" role="alert">{erreur}</p>}
+        <button className="btn btn--primary au-submit" type="submit" disabled={envoi}>
           {envoi ? "Création…" : "Créer mon compte"}
         </button>
       </form>
