@@ -3,13 +3,20 @@
 import { Mi } from "./Mi";
 import { urlTelechargement, type DocumentPublic } from "../../lib/campus";
 
+// Le téléchargement passe par l'application (jeton en en-tête), le lien reste pour l'adresse et le clic droit
+const ouvrir = (e: React.MouseEvent, run: () => void) => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+  e.preventDefault();
+  run();
+};
+
 type Props = {
   d: DocumentPublic;
   vue: "grille" | "liste";
   groupe?: "filiere" | "ue"; // regroupement de la liste : évite de répéter la filière ou l'UE sur chaque carte
   favori: boolean;
   basculerFavori: () => void;
-  surTelechargement: (d: DocumentPublic) => void;
+  surTelechargement: (d: DocumentPublic, corrige?: boolean) => void;
   surPartage: (d: DocumentPublic) => void;
 };
 
@@ -21,6 +28,10 @@ export default function DocCard({ d, vue, groupe, favori, basculerFavori, surTel
   const fichier = `${sansExtension(d.nom)}${d.tag_ordre ? ` (${d.tag_ordre})` : ""}`;
   const taille = d.taille_lisible && d.taille_lisible !== "Non disponible" ? d.taille_lisible : "";
   const lien = urlTelechargement(d.lien_telechargement);
+  const verrou = d.acces === "forfait_requis";
+  const iconeDl = verrou ? "lock" : "download";
+  const dl = (e: React.MouseEvent) => ouvrir(e, () => surTelechargement(d));
+  const dlCorrige = (e: React.MouseEvent) => ouvrir(e, () => surTelechargement(d, true));
   const parUe = groupe === "ue";
   const titre = parUe ? fichier : d.intitule_ue;
   const annee = d.annee_academique ? ` · ${d.annee_academique}` : "";
@@ -61,7 +72,7 @@ export default function DocCard({ d, vue, groupe, favori, basculerFavori, surTel
           <p>{genreLigne}{annee}</p>
           {ligneFichier && <p className="row-file">{ligneFichier}</p>}
           {d.lien_corrige && (
-            <a className="row-link" href={urlTelechargement(d.lien_corrige)} rel="noopener" onClick={() => surTelechargement(d)}>
+            <a className="row-link" href={urlTelechargement(d.lien_corrige)} rel="noopener" onClick={dlCorrige}>
               Télécharger le corrigé
             </a>
           )}
@@ -69,8 +80,8 @@ export default function DocCard({ d, vue, groupe, favori, basculerFavori, surTel
         <div className="row-actions">
           {boutonFavori}
           <span className="row-share">{boutonPartage}</span>
-          <a className="icon-btn icon-btn--filled" href={lien} rel="noopener" onClick={() => surTelechargement(d)} aria-label={`Télécharger ${fichier}`}>
-            <Mi n="download" />
+          <a className="icon-btn icon-btn--filled" href={lien} rel="noopener" onClick={dl} aria-label={`${verrou ? "Débloquer" : "Télécharger"} ${fichier}`}>
+            <Mi n={iconeDl} />
           </a>
         </div>
       </li>
@@ -89,14 +100,14 @@ export default function DocCard({ d, vue, groupe, favori, basculerFavori, surTel
         {ligneFichier && <p className="tile-file" title={ligneFichier}>{ligneFichier}</p>}
       </div>
       <div className="tile-actions">
-        <a className="btn btn--tonal tile-dl" href={lien} rel="noopener" onClick={() => surTelechargement(d)}>
-          <Mi n="download" size={20} />
-          <span>Télécharger</span>
+        <a className="btn btn--tonal tile-dl" href={lien} rel="noopener" onClick={dl}>
+          <Mi n={iconeDl} size={20} />
+          <span>{verrou ? "Débloquer" : "Télécharger"}</span>
         </a>
         {boutonPartage}
       </div>
       {d.lien_corrige && (
-        <a className="tile-corrige" href={urlTelechargement(d.lien_corrige)} rel="noopener" onClick={() => surTelechargement(d)}>
+        <a className="tile-corrige" href={urlTelechargement(d.lien_corrige)} rel="noopener" onClick={dlCorrige}>
           Télécharger le corrigé
         </a>
       )}

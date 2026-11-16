@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "../components/AppShell";
 import { Mi } from "../components/Mi";
-import { rafraichirProfil, seDeconnecter } from "../../lib/campus";
+import { listerForfaits, mesAbonnements, rafraichirProfil, seDeconnecter, type EtatForfaits, type MonAbonnement } from "../../lib/campus";
 import { usePrefs } from "../../lib/prefs";
 import { useSession } from "../../lib/useSession";
 
@@ -13,6 +13,15 @@ export default function Compte() {
 
   useEffect(() => {
     if (pret && connecte) rafraichirProfil().catch(() => {});
+  }, [pret, connecte]);
+
+  const [forfaits, setForfaits] = useState<EtatForfaits | null>(null);
+  const [abonnements, setAbonnements] = useState<MonAbonnement[]>([]);
+
+  useEffect(() => {
+    if (!pret || !connecte) return;
+    listerForfaits().then(setForfaits).catch(() => {});
+    mesAbonnements().then(setAbonnements).catch(() => {});
   }, [pret, connecte]);
 
   const initiales = user ? `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase() : "";
@@ -48,6 +57,32 @@ export default function Compte() {
                 />
               </label>
             </div>
+
+            {forfaits?.actifs && (
+              <>
+                <h2 className="compte-section">Mes forfaits</h2>
+                <div className="carte">
+                  {forfaits.forfaits.map((f) => {
+                    const abo = abonnements.find((a) => a.forfait_code === f.code);
+                    return (
+                      <div key={f.code} className="forfait-ligne">
+                        <span>
+                          <strong>{f.nom}</strong>
+                          <small>
+                            {abo
+                              ? `Valable jusqu'au ${new Date(abo.fin).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`
+                              : `${new Intl.NumberFormat("fr-FR").format(f.prix)} FCFA par an`}
+                          </small>
+                        </span>
+                        {abo && <span className="forfait-etat">Actif</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="demande-intro">{forfaits.instructions_paiement} Votre matricule : {user.matricule}.</p>
+                <p className="demande-intro">Les documents déjà publiés restent gratuits jusqu'au {new Date(forfaits.libre_jusqu_au).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}.</p>
+              </>
+            )}
 
             <button type="button" className="btn btn--outline compte-out" onClick={() => void seDeconnecter()}>
               <Mi n="logout" size={20} />

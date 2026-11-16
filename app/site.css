@@ -240,3 +240,15 @@
   .chip { border-color: currentColor; }
   .nav { background: #fff; border-top-color: var(--text-1); }
 }
+
+/* Forfaits */
+.forfait-prix { display: flex; align-items: center; gap: 14px; margin: 12px 0 8px; }
+.forfait-prix strong { display: block; font-family: var(--font-display); font-size: 1.5rem; color: var(--nuit); }
+.forfait-prix small { color: var(--text-3); font-size: 0.88rem; }
+.forfait-icone { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 14px; background: var(--brand-soft); color: var(--azur); }
+.forfait-matricule { margin: 0 0 18px; padding: 12px 14px; border-radius: 14px; background: #f6f8fc; font-size: 0.95rem; }
+.forfait-ligne { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 10px 0; }
+.forfait-ligne + .forfait-ligne { border-top: 1px solid var(--border); }
+.forfait-ligne small { display: block; margin-top: 2px; color: var(--text-3); font-size: 0.85rem; }
+.forfait-etat { flex-shrink: 0; font-size: 0.85rem; font-weight: 600; color: var(--azur); }
+.compte-section { margin: 20px 0 8px; font-size: 0.95rem; color: var(--text-2); }

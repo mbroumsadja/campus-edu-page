@@ -35,3 +35,7 @@ Un étudiant connecté démarre sur sa filière et son niveau (modifiable depuis
 npm install
 npm run dev
 ```
+
+## Forfaits
+
+Quand les forfaits sont activés côté administration, les documents payants affichent « Débloquer ». Le téléchargement passe par `GET /search/documents/telecharger?format=json` avec le jeton en en-tête ; une réponse 401 ou 402 ouvre la feuille avec le prix et les instructions de paiement. La page Compte liste les forfaits et leur date de fin. L'activation d'un forfait se fait dans l'administration, par matricule, après vérification du paiement.

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AppShell from "./AppShell";
 import DocCard from "./DocCard";
 import FeuilleDemande from "./FeuilleDemande";
+import FeuilleForfait from "./FeuilleForfait";
 import FeuilleFiltres from "./FeuilleFiltres";
 import Squelettes from "./Squelettes";
 import { Mi } from "./Mi";
@@ -12,10 +13,12 @@ import {
   ApiError,
   listerFilieres,
   NIVEAUX,
+  obtenirTelechargement,
   rafraichirProfil,
   rechercherDocuments,
   urlTelechargement,
   type DocumentPublic,
+  type ForfaitInfo,
   type Filiere,
   type Pagination,
 } from "../../lib/campus";
@@ -37,6 +40,7 @@ function Contenu() {
   const { prefs, maj, pret: prefsPretes } = usePrefs();
   const { basculer, estFavori } = useFavoris();
 
+  const [forfaitRequis, setForfaitRequis] = useState<ForfaitInfo | null>(null);
   const [saisie, setSaisie] = useState("");
   const [q, setQ] = useState("");
   const [docs, setDocs] = useState<DocumentPublic[]>([]);
@@ -136,7 +140,18 @@ function Contenu() {
     return [...carte.values()];
   }, [docs, regroupement]);
 
-  const telecharge = (d: DocumentPublic) => snack(`Téléchargement lancé : ${d.intitule_ue}`);
+  const telecharge = async (d: DocumentPublic, corrige = false) => {
+    const lien = corrige && d.lien_corrige ? d.lien_corrige : d.lien_telechargement;
+    try {
+      const url = await obtenirTelechargement(lien);
+      snack(`Téléchargement lancé : ${d.intitule_ue}`);
+      window.location.assign(url);
+    } catch (err) {
+      if (err instanceof ApiError && err.forfait && (err.status === 401 || err.status === 402)) setForfaitRequis(err.forfait);
+      else if (err instanceof ApiError && err.status === 401) snack("Connectez-vous pour télécharger ce document.");
+      else snack(err instanceof ApiError ? err.message : "Téléchargement impossible. Réessayez.");
+    }
+  };
   const toggleFavori = (d: DocumentPublic) => {
     if (estFavori(d)) {
       basculer(d);
@@ -283,6 +298,7 @@ function Contenu() {
         {nbFiltres > 0 && <b className="fab-badge">{nbFiltres}</b>}
       </button>
 
+      <FeuilleForfait forfait={forfaitRequis} fermer={() => setForfaitRequis(null)} />
       <FeuilleDemande ouverte={demande} fermer={() => setDemande(false)} propose={texte} envoye={(m) => snack(m)} />
       <FeuilleFiltres ouverte={feuille} fermer={() => setFeuille(false)} prefs={prefs} filieres={filieres} maj={maj} reinitialiser={reinitialiser} />
     </AppShell>

@@ -24,9 +24,19 @@ export type Utilisateur = {
   filiere?: Filiere | null;
 };
 
+export type ForfaitInfo = {
+  code: string;
+  nom: string;
+  prix: number;
+  duree_jours: number;
+  instructions_paiement?: string;
+};
+
 export class ApiError extends Error {
   status: number;
   fields: Record<string, string>;
+  code?: string;
+  forfait?: ForfaitInfo;
   constructor(message: string, status: number, fields: Record<string, string> = {}) {
     super(message);
     this.status = status;
@@ -107,8 +117,12 @@ export type Pagination = { total: number; page: number; limit: number; totalPage
 const erreurDepuis = async (res: Response): Promise<ApiError> => {
   let message = "Une erreur est survenue. Réessayez dans un instant.";
   const fields: Record<string, string> = {};
+  let code: string | undefined;
+  let forfait: ForfaitInfo | undefined;
   try {
     const corps = await res.json();
+    if (typeof corps?.code === "string") code = corps.code;
+    if (corps?.data?.forfait) forfait = corps.data.forfait;
     if (typeof corps?.message === "string") message = corps.message;
     else if (typeof corps?.error === "string") message = corps.error;
     const liste = Array.isArray(corps?.errors) ? corps.errors : [];
@@ -121,7 +135,10 @@ const erreurDepuis = async (res: Response): Promise<ApiError> => {
     /* corps non JSON */
   }
   if (res.status === 429) message = message || "Trop de tentatives. Patientez un moment.";
-  return new ApiError(message, res.status, fields);
+  const err = new ApiError(message, res.status, fields);
+  err.code = code;
+  err.forfait = forfait;
+  return err;
 };
 
 const reseau = () => new ApiError("Connexion impossible. Vérifiez votre réseau puis réessayez.", 0);
@@ -258,6 +275,8 @@ export type DocumentPublic = {
   code_ue: string;
   intitule_ue: string;
   annee_academique?: string | null;
+  forfait?: "cours" | "sujets" | "supports";
+  acces?: "libre" | "autorise" | "forfait_requis";
 };
 
 export type RechercheDocuments = {
@@ -278,13 +297,34 @@ export const rechercherDocuments = async (p: RechercheDocuments, signal?: AbortS
   if (!p.q && !p.niveau && !p.type && !p.filiere_id) q.set("recents", "1");
   const res = await json<{ documents: DocumentPublic[]; nombre_resultats: number; pagination: Pagination }>(
     `/search/documents?${q}`,
-    { auth: false, signal }
+    { signal } // jeton envoyé si connecté : l'API indique les documents déjà débloqués
   );
   return res.data;
 };
 
 // Les liens renvoyés par l'API sont relatifs à l'hôte du backend
 export const urlTelechargement = (lien: string) => `${API_URL.replace(/\/api\/v1$/, "")}${lien}`;
+
+// Le jeton voyage en en-tête : le téléchargement passe par fetch, puis le navigateur ouvre l'adresse du fichier
+export const obtenirTelechargement = async (lien: string): Promise<string> => {
+  const chemin = lien.replace(/^\/api\/v1/, "");
+  const sep = chemin.includes("?") ? "&" : "?";
+  const res = await json<{ url: string }>(`${chemin}${sep}format=json`);
+  return res.data.url;
+};
+
+// ── Forfaits annuels ──────────────────────────────────────────────────────
+export type Forfait = ForfaitInfo & { description: string | null; possede: boolean };
+export type EtatForfaits = {
+  actifs: boolean;
+  libre_jusqu_au: string;
+  instructions_paiement: string;
+  forfaits: Forfait[];
+};
+export type MonAbonnement = { id: number; forfait_code: string; debut: string; fin: string };
+
+export const listerForfaits = async () => (await json<EtatForfaits>("/forfaits")).data;
+export const mesAbonnements = async () => (await json<MonAbonnement[]>("/forfaits/moi")).data;
 
 // ── Demande d'un document manquant (envoyée à l'administration) ───────────
 export type DemandeDocument = { nom_cours: string; nom_etudiant?: string; message?: string; contact?: string };
