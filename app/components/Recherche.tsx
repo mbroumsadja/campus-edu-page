@@ -118,6 +118,24 @@ function Contenu() {
   const titreListe = useMemo(() => (filtre ? "Résultats" : "Derniers documents"), [filtre]);
   const vide = !chargement && !erreur && docs.length === 0;
 
+  // Sans compte : par filière. Avec un compte : par unité d'enseignement.
+  const regroupement: "filiere" | "ue" = connecte ? "ue" : "filiere";
+  const groupes = useMemo(() => {
+    const carte = new Map<string, { cle: string; titre: string; detail: string; docs: DocumentPublic[] }>();
+    for (const d of docs) {
+      const cle = regroupement === "ue" ? `ue:${d.code_ue}:${d.filiere_nom}:${d.niveau}` : `f:${d.filiere_nom}`;
+      let g = carte.get(cle);
+      if (!g) {
+        g = regroupement === "ue"
+          ? { cle, titre: `${d.code_ue} · ${d.intitule_ue}`, detail: `${d.filiere_nom} · ${d.niveau} · ${d.semestre}`, docs: [] }
+          : { cle, titre: d.filiere_nom, detail: "", docs: [] };
+        carte.set(cle, g);
+      }
+      g.docs.push(d);
+    }
+    return [...carte.values()];
+  }, [docs, regroupement]);
+
   const telecharge = (d: DocumentPublic) => snack(`Téléchargement lancé : ${d.intitule_ue}`);
   const toggleFavori = (d: DocumentPublic) => {
     if (estFavori(d)) {
@@ -219,21 +237,30 @@ function Contenu() {
 
         {chargement && docs.length === 0 && !erreur && <Squelettes vue={prefs.vue} />}
 
-        {docs.length > 0 && !erreur && (
-          <ul className={prefs.vue === "grille" ? "tiles" : "rows"} data-busy={chargement}>
-            {docs.map((d) => (
-              <DocCard
-                key={`${d.type_contenu}-${d.id}`}
-                d={d}
-                vue={prefs.vue}
-                favori={estFavori(d)}
-                basculerFavori={() => toggleFavori(d)}
-                surTelechargement={telecharge}
-                surPartage={partager}
-              />
-            ))}
-          </ul>
-        )}
+        {docs.length > 0 && !erreur &&
+          groupes.map((g) => (
+            <section className="groupe" key={g.cle} aria-labelledby={`g-${g.cle}`}>
+              <div className="groupe-t">
+                <h2 id={`g-${g.cle}`}>{g.titre}</h2>
+                <span className="groupe-n tabular">{g.docs.length}</span>
+              </div>
+              {g.detail && <p className="groupe-d">{g.detail}</p>}
+              <ul className={prefs.vue === "grille" ? "tiles" : "rows"} data-busy={chargement}>
+                {g.docs.map((d) => (
+                  <DocCard
+                    key={`${d.type_contenu}-${d.id}`}
+                    d={d}
+                    vue={prefs.vue}
+                    groupe={regroupement}
+                    favori={estFavori(d)}
+                    basculerFavori={() => toggleFavori(d)}
+                    surTelechargement={telecharge}
+                    surPartage={partager}
+                  />
+                ))}
+              </ul>
+            </section>
+          ))}
 
         {!chargement && pagination && pagination.page < pagination.totalPages && (
           <div className="more">

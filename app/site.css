@@ -84,6 +84,13 @@
 @media (min-width: 640px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
 @media (min-width: 1000px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .rows { display: flex; flex-direction: column; gap: 8px; }
+.groupe { margin-top: 24px; }
+.groupe:first-of-type { margin-top: 0; }
+.groupe-t { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.groupe-t h2 { font-size: 1.05rem; }
+.groupe-n { color: var(--text-3); font-size: 0.85rem; font-weight: 600; }
+.groupe-d { margin-bottom: 10px; color: var(--text-3); font-size: 0.85rem; }
+.groupe-t + .tiles, .groupe-t + .rows { margin-top: 10px; }
 .tiles[data-busy="true"], .rows[data-busy="true"] { opacity: 0.7; }
 
 /* Tuile */

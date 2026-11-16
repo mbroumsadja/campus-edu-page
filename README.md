@@ -8,7 +8,7 @@ Interface de type application Android (Material 3, gestes et mouvement inspirés
 
 | Route | Accès | Rôle |
 |---|---|---|
-| `/` | public | derniers documents, puis recherche (texte, niveau, type, filière) ; affichage en grille ou en liste ; téléchargement, partage et demande d'un document manquant (envoyée à l'administration), sans compte |
+| `/` | public | derniers documents, puis recherche (texte, niveau, type, filière) ; résultats groupés par filière (visiteur) ou par unité d'enseignement (compte connecté), en grille ou en liste ; téléchargement, partage et demande d'un document manquant (envoyée à l'administration), sans compte |
 | `/favoris` | public | documents mis en favoris, gardés sur l'appareil et séparés par compte |
 | `/compte` | public | profil et réglage « Mon niveau en premier » ; création de compte et connexion pour les visiteurs |
 | `/inscription` | public | création d'un compte étudiant (matricule, e-mail, filière, niveau, mot de passe) |
