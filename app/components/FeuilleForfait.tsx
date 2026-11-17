@@ -5,6 +5,7 @@ import Feuille from "./Feuille";
 import { Mi } from "./Mi";
 import { ApiError, listerForfaits, payerForfait, type ForfaitInfo } from "../../lib/campus";
 import { useSession } from "../../lib/useSession";
+import { useSnack } from "./Snack";
 
 type Props = { forfait: ForfaitInfo | null; fermer: () => void };
 
@@ -16,9 +17,34 @@ export default function FeuilleForfait({ forfait, fermer }: Props) {
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState("");
   const [enLigne, setEnLigne] = useState(false);
+  const [whatsapp, setWhatsapp] = useState("");
+  const snack = useSnack();
   useEffect(() => {
-    if (forfait) listerForfaits().then((e) => setEnLigne(!!e.paiement_en_ligne)).catch(() => {});
+    if (forfait) {
+      listerForfaits()
+        .then((e) => {
+          setEnLigne(!!e.paiement_en_ligne);
+          setWhatsapp(e.contact_whatsapp ?? "");
+        })
+        .catch(() => {});
+    }
   }, [forfait]);
+
+  const copier = async () => {
+    if (!user) return;
+    try {
+      await navigator.clipboard.writeText(user.matricule);
+      snack("Matricule copié");
+    } catch {
+      snack(`Votre matricule : ${user.matricule}`);
+    }
+  };
+
+  const lienWhatsapp = forfait && user && whatsapp
+    ? `https://wa.me/${whatsapp}?text=${encodeURIComponent(
+        `Bonjour, j'ai payé le forfait « ${forfait.nom} » (${FCFA(forfait.prix)}). Matricule : ${user.matricule}. Référence du paiement : `
+      )}`
+    : "";
 
   const payer = async () => {
     if (!forfait || envoi) return;
@@ -65,7 +91,14 @@ export default function FeuilleForfait({ forfait, fermer }: Props) {
                     {envoi ? "Ouverture du paiement…" : `Payer ${FCFA(forfait.prix)}`}
                   </button>
                 ) : (
-                  <button type="button" className="btn btn--tonal" onClick={fermer}>Compris</button>
+                  <>
+                    {lienWhatsapp && (
+                      <a className="btn btn--primary" href={lienWhatsapp} target="_blank" rel="noopener">J&apos;ai payé : prévenir l&apos;administration</a>
+                    )}
+                    <button type="button" className={lienWhatsapp ? "btn btn--tonal" : "btn btn--primary"} onClick={() => void copier()}>
+                      Copier mon matricule
+                    </button>
+                  </>
                 )}
               </div>
             </>

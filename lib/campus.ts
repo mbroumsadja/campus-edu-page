@@ -346,6 +346,7 @@ export type EtatForfaits = {
   libre_jusqu_au: string;
   instructions_paiement: string;
   paiement_en_ligne?: boolean;
+  contact_whatsapp?: string | null;
   forfaits: Forfait[];
 };
 export type MonAbonnement = { id: number; forfait_code: string; debut: string; fin: string };

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import FeuilleForfait from "../components/FeuilleForfait";
 import AppShell from "../components/AppShell";
 import { Mi } from "../components/Mi";
-import { etatPaiement, listerForfaits, mesAbonnements, rafraichirProfil, seDeconnecter, type EtatForfaits, type MonAbonnement } from "../../lib/campus";
+import { etatPaiement, listerForfaits, mesAbonnements, rafraichirProfil, seDeconnecter, type EtatForfaits, type ForfaitInfo, type MonAbonnement } from "../../lib/campus";
 import { usePrefs } from "../../lib/prefs";
 import { useSession } from "../../lib/useSession";
 
@@ -24,6 +25,7 @@ export default function Compte() {
     mesAbonnements().then(setAbonnements).catch(() => {});
   }, [pret, connecte]);
 
+  const [forfaitChoisi, setForfaitChoisi] = useState<ForfaitInfo | null>(null);
   const [paiement, setPaiement] = useState<"" | "attente" | "reussi" | "echec">("");
 
   // Retour de Fapshi : /compte?paiement=<id>. L'API vérifie chez Fapshi ; on réessaie quelques secondes.
@@ -112,12 +114,15 @@ export default function Compte() {
                               : `${new Intl.NumberFormat("fr-FR").format(f.prix)} FCFA par an`}
                           </small>
                         </span>
-                        {abo && <span className="forfait-etat">Actif</span>}
+                        {abo ? (
+                          <span className="forfait-etat">Actif</span>
+                        ) : (
+                          <button type="button" className="btn btn--tonal forfait-obtenir" onClick={() => setForfaitChoisi({ ...f, instructions_paiement: forfaits.instructions_paiement })}>Obtenir</button>
+                        )}
                       </div>
                     );
                   })}
                 </div>
-                <p className="demande-intro">{forfaits.instructions_paiement} Votre matricule : {user.matricule}.</p>
                 <p className="demande-intro">Les documents déjà publiés restent gratuits jusqu'au {new Date(forfaits.libre_jusqu_au).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}.</p>
               </>
             )}
@@ -139,6 +144,7 @@ export default function Compte() {
           </div>
         )}
       </section>
+      <FeuilleForfait forfait={forfaitChoisi} fermer={() => setForfaitChoisi(null)} />
     </AppShell>
   );
 }
