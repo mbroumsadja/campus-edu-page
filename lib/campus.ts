@@ -247,14 +247,43 @@ const suiteInscription = (data: ReponseInscription, message?: string): SuiteInsc
   return { etape: "termine", statut: data.statut ?? "en_attente", message: message ?? "" };
 };
 
+// L'étape « code » survit à un rechargement ou à un changement d'application (aller lire le mail)
+const CLE_VERIF = "campus.verification";
+export type VerificationEnCours = { email: string; saisie: string };
+
+export const lireVerification = (): VerificationEnCours | null => {
+  try {
+    const v = JSON.parse(localStorage.getItem(CLE_VERIF) || "null");
+    return v && typeof v.email === "string" && v.expire > Date.now() ? { email: v.email, saisie: v.saisie || v.email } : null;
+  } catch {
+    return null;
+  }
+};
+export const garderVerification = (email: string, saisie: string, expireDans = 900) => {
+  try {
+    localStorage.setItem(CLE_VERIF, JSON.stringify({ email, saisie, expire: Date.now() + expireDans * 1000 }));
+  } catch {
+    /* stockage indisponible : la page reste utilisable sans reprise */
+  }
+};
+export const effacerVerification = () => {
+  try {
+    localStorage.removeItem(CLE_VERIF);
+  } catch {
+    /* rien à effacer */
+  }
+};
+
 // Avec la confirmation par mail, l'inscription renvoie « code » ; le compte n'existe qu'après confirmerInscription
 export const sInscrire = async (champs: Inscription) => {
   const { data, message } = await json<ReponseInscription>("/auth/register", { method: "POST", auth: false, body: champs });
+  if (data.verification) garderVerification(data.email ?? champs.email, champs.email, 900);
   return suiteInscription(data, message);
 };
 
 export const confirmerInscription = async (email: string, code: string) => {
   const { data, message } = await json<ReponseInscription>("/auth/register/verifier", { method: "POST", auth: false, body: { email, code } });
+  effacerVerification();
   return suiteInscription(data, message);
 };
 

@@ -42,4 +42,4 @@ Quand les forfaits sont activés côté administration, les documents payants af
 
 Quand le backend annonce `paiement_en_ligne`, la feuille propose « Payer » : l'étudiant est envoyé sur Fapshi, puis revient sur `/compte?paiement=<id>` où la page vérifie le paiement pendant quelques secondes.
 
-L'inscription se fait en deux temps quand le backend envoie des mails : formulaire, puis saisie du code à 6 chiffres reçu par mail (`/auth/register/verifier`, renvoi possible après 60 secondes). Sans envoi de mails côté backend, le compte est créé directement.
+La confirmation a sa propre adresse, `/verification`, qui survit à un rechargement (l'état est gardé dans le navigateur 15 minutes) et accepte le lien du mail (`?email=…&code=…`). L'inscription se fait en deux temps quand le backend envoie des mails : formulaire, puis saisie du code à 6 chiffres reçu par mail (`/auth/register/verifier`, renvoi possible après 60 secondes). Sans envoi de mails côté backend, le compte est créé directement.
