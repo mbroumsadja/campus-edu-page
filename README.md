@@ -41,3 +41,5 @@ npm run dev
 Quand les forfaits sont activés côté administration, les documents payants affichent « Débloquer ». Le téléchargement passe par `GET /search/documents/telecharger?format=json` avec le jeton en en-tête ; une réponse 401 ou 402 ouvre la feuille avec le prix et les instructions de paiement. La page Compte liste les forfaits et leur date de fin. L'activation d'un forfait se fait dans l'administration, par matricule, après vérification du paiement.
 
 Quand le backend annonce `paiement_en_ligne`, la feuille propose « Payer » : l'étudiant est envoyé sur Fapshi, puis revient sur `/compte?paiement=<id>` où la page vérifie le paiement pendant quelques secondes.
+
+L'inscription se fait en deux temps quand le backend envoie des mails : formulaire, puis saisie du code à 6 chiffres reçu par mail (`/auth/register/verifier`, renvoi possible après 60 secondes). Sans envoi de mails côté backend, le compte est créé directement.

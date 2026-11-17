@@ -226,15 +226,41 @@ export type Inscription = {
   password: string;
 };
 
-export const sInscrire = async (champs: Inscription) => {
-  const { data, message } = await json<Partial<Ouverture> & { statut: "actif" | "en_attente" }>(
-    "/auth/register",
-    { method: "POST", auth: false, body: champs }
-  );
+export type SuiteInscription =
+  | { etape: "code"; email: string; renvoiDans: number; message: string }
+  | { etape: "termine"; statut: "actif" | "en_attente"; message: string };
+
+type ReponseInscription = Partial<Ouverture> & {
+  statut?: "actif" | "en_attente";
+  verification?: boolean;
+  email?: string;
+  renvoi_dans?: number;
+};
+
+const suiteInscription = (data: ReponseInscription, message?: string): SuiteInscription => {
+  if (data.verification) {
+    return { etape: "code", email: data.email ?? "", renvoiDans: data.renvoi_dans ?? 60, message: message ?? "" };
+  }
   if (data.statut === "actif" && data.accessToken && data.refreshToken) {
     enregistrerSession(data.accessToken, data.refreshToken, data.utilisateur);
   }
-  return { statut: data.statut, message: message ?? "" };
+  return { etape: "termine", statut: data.statut ?? "en_attente", message: message ?? "" };
+};
+
+// Avec la confirmation par mail, l'inscription renvoie « code » ; le compte n'existe qu'après confirmerInscription
+export const sInscrire = async (champs: Inscription) => {
+  const { data, message } = await json<ReponseInscription>("/auth/register", { method: "POST", auth: false, body: champs });
+  return suiteInscription(data, message);
+};
+
+export const confirmerInscription = async (email: string, code: string) => {
+  const { data, message } = await json<ReponseInscription>("/auth/register/verifier", { method: "POST", auth: false, body: { email, code } });
+  return suiteInscription(data, message);
+};
+
+export const renvoyerCode = async (email: string) => {
+  const { data } = await json<{ renvoi_dans: number }>("/auth/register/renvoyer", { method: "POST", auth: false, body: { email } });
+  return data.renvoi_dans;
 };
 
 export const seDeconnecter = async () => {

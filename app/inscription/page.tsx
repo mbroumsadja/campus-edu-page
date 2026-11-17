@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AuthShell from "../components/AuthShell";
 import Champ from "../components/Champ";
-import { ApiError, listerFilieres, NIVEAUX, sInscrire, type Filiere, type Niveau } from "../../lib/campus";
+import { ApiError, confirmerInscription, listerFilieres, NIVEAUX, renvoyerCode, sInscrire, type Filiere, type Niveau, type SuiteInscription } from "../../lib/campus";
 import { useSession } from "../../lib/useSession";
 
 export default function Inscription() {
@@ -15,6 +15,55 @@ export default function Inscription() {
   const [erreur, setErreur] = useState("");
   const [envoi, setEnvoi] = useState(false);
   const [attente, setAttente] = useState("");
+  const [verif, setVerif] = useState<{ email: string; saisie: string } | null>(null);
+  const [code, setCode] = useState("");
+  const [delai, setDelai] = useState(0);
+  const [info, setInfo] = useState("");
+
+  // Compte à rebours avant de pouvoir redemander un code
+  useEffect(() => {
+    if (delai <= 0) return;
+    const t = setTimeout(() => setDelai((d) => d - 1), 1000);
+    return () => clearTimeout(t);
+  }, [delai]);
+
+  const suite = (r: SuiteInscription, saisie = "") => {
+    if (r.etape === "code") {
+      setVerif({ email: r.email, saisie: saisie || r.email });
+      setDelai(r.renvoiDans);
+      setCode("");
+      setErreur("");
+      setInfo("");
+    } else if (r.statut !== "actif") {
+      setAttente(r.message || "Compte créé. Il sera activé après validation.");
+    }
+    setEnvoi(false);
+  };
+
+  const confirmer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (envoi || !verif) return;
+    if (!/^\d{6}$/.test(code)) return setErreur("Le code contient 6 chiffres.");
+    setEnvoi(true);
+    setErreur("");
+    try {
+      suite(await confirmerInscription(verif.email, code));
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : "Confirmation impossible.");
+      setEnvoi(false);
+    }
+  };
+
+  const redemander = async () => {
+    if (!verif || delai > 0) return;
+    setErreur("");
+    try {
+      setDelai(await renvoyerCode(verif.email));
+      setInfo("Un nouveau code vient d'être envoyé.");
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : "Envoi impossible.");
+    }
+  };
 
   const maj = (k: keyof typeof f) => (v: string) => setF((s) => ({ ...s, [k]: v }));
 
@@ -50,10 +99,7 @@ export default function Inscription() {
         niveau: f.niveau as Niveau,
         password: f.password,
       });
-      if (r.statut !== "actif") {
-        setAttente(r.message || "Compte créé. Il sera activé après validation.");
-        setEnvoi(false);
-      }
+      suite(r, f.email.trim());
     } catch (err) {
       if (err instanceof ApiError) {
         setChamps(err.fields);
@@ -62,6 +108,28 @@ export default function Inscription() {
       setEnvoi(false);
     }
   };
+
+  if (verif) {
+    return (
+      <AuthShell
+        titre="Confirmez votre adresse"
+        intro={`Nous avons envoyé un code à 6 chiffres à ${verif.saisie}. Il est valable 15 minutes.`}
+        pied={<button type="button" className="lien-bouton" onClick={() => { setVerif(null); setCode(""); setErreur(""); }}>Modifier mon adresse</button>}
+      >
+        <form onSubmit={confirmer} noValidate>
+          <Champ id="code" label="Code de confirmation" value={code} onChange={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" mono aide="Pensez à regarder dans les courriers indésirables." />
+          {info && <p className="alert alert--ok" role="status">{info}</p>}
+          {erreur && <p className="alert" role="alert">{erreur}</p>}
+          <button className="btn btn--primary au-submit" type="submit" disabled={envoi || code.length !== 6}>
+            {envoi ? "Vérification…" : "Confirmer"}
+          </button>
+          <button className="btn btn--tonal au-submit" type="button" onClick={redemander} disabled={delai > 0}>
+            {delai > 0 ? `Renvoyer le code dans ${delai} s` : "Renvoyer le code"}
+          </button>
+        </form>
+      </AuthShell>
+    );
+  }
 
   if (attente) {
     return (
