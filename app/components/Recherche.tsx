@@ -14,6 +14,7 @@ import {
   listerFilieres,
   NIVEAUX,
   obtenirTelechargement,
+  fichierDisponible,
   rafraichirProfil,
   rechercherDocuments,
   urlTelechargement,
@@ -144,8 +145,12 @@ function Contenu() {
     const lien = corrige && d.lien_corrige ? d.lien_corrige : d.lien_telechargement;
     try {
       const url = await obtenirTelechargement(lien);
-      snack(`Téléchargement lancé : ${d.intitule_ue}`);
+      if (!(await fichierDisponible(url))) {
+        snack("Ce document est momentanément indisponible. Réessayez plus tard.");
+        return;
+      }
       window.location.assign(url);
+      snack(`Téléchargement lancé : ${d.intitule_ue}`);
     } catch (err) {
       if (err instanceof ApiError && err.forfait && (err.status === 401 || err.status === 402)) setForfaitRequis(err.forfait);
       else if (err instanceof ApiError && err.status === 401) snack("Connectez-vous pour télécharger ce document.");

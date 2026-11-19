@@ -368,6 +368,21 @@ export const obtenirTelechargement = async (lien: string): Promise<string> => {
   return res.data.url;
 };
 
+// Vérifie que le fichier répond avant de lancer le téléchargement (stockage saturé ou fichier supprimé :
+// le navigateur afficherait sinon l'icône de téléchargement sans rien enregistrer).
+// Une erreur réseau ou CORS n'est pas bloquante : on laisse le navigateur essayer.
+export const fichierDisponible = async (url: string): Promise<boolean> => {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch(url, { method: "HEAD", signal: ctrl.signal });
+    clearTimeout(t);
+    return res.ok;
+  } catch {
+    return true;
+  }
+};
+
 // ── Forfaits annuels ──────────────────────────────────────────────────────
 export type Forfait = ForfaitInfo & { description: string | null; possede: boolean };
 export type EtatForfaits = {
