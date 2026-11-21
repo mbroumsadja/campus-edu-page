@@ -136,7 +136,7 @@ export default function Compte() {
           <div className="empty">
             <span className="empty-icon"><Mi n="person" size={32} /></span>
             <h1 className="empty-h">Votre compte étudiant</h1>
-            <p>Gardez votre filière et votre niveau : les recherches démarrent sur vos documents, et vos favoris restent séparés de ceux des autres comptes.</p>
+            <p>Votre compte garde votre filière et votre niveau, et la recherche démarre sur vos documents. Vos favoris restent séparés de ceux des autres comptes.</p>
             <div className="empty-actions">
               <a className="btn btn--primary" href="/inscription">Créer un compte</a>
               <a className="btn btn--tonal" href="/connexion">Se connecter</a>

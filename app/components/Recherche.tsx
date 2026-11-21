@@ -4,36 +4,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AppShell from "./AppShell";
 import DocCard from "./DocCard";
 import FeuilleDemande from "./FeuilleDemande";
-import FeuilleForfait from "./FeuilleForfait";
 import FeuilleFiltres from "./FeuilleFiltres";
 import Squelettes from "./Squelettes";
 import { Mi } from "./Mi";
 import { useSnack } from "./Snack";
+import { partager, useActionsDoc } from "./ActionsDoc";
 import {
   ApiError,
   listerFilieres,
   NIVEAUX,
-  obtenirTelechargement,
-  fichierDisponible,
   rafraichirProfil,
   rechercherDocuments,
-  urlTelechargement,
   type DocumentPublic,
-  type ForfaitInfo,
   type Filiere,
   type Pagination,
 } from "../../lib/campus";
 import { useFavoris, usePrefs } from "../../lib/prefs";
 import { useSession } from "../../lib/useSession";
 
-export function partager(d: DocumentPublic) {
-  const texte = `${d.intitule_ue} (${d.code_ue}), ${d.nom} : ${urlTelechargement(d.lien_telechargement)}`;
-  if (typeof navigator !== "undefined" && navigator.share) {
-    navigator.share({ title: d.intitule_ue, text: texte }).catch(() => {});
-  } else {
-    window.open(`https://wa.me/?text=${encodeURIComponent(texte)}`, "_blank", "noopener");
-  }
-}
+export { partager };
 
 function Contenu() {
   const snack = useSnack();
@@ -41,7 +30,7 @@ function Contenu() {
   const { prefs, maj, pret: prefsPretes } = usePrefs();
   const { basculer, estFavori } = useFavoris();
 
-  const [forfaitRequis, setForfaitRequis] = useState<ForfaitInfo | null>(null);
+  const { telecharge, ouvrirApercu, ecrans } = useActionsDoc();
   const [saisie, setSaisie] = useState("");
   const [q, setQ] = useState("");
   const [docs, setDocs] = useState<DocumentPublic[]>([]);
@@ -141,22 +130,6 @@ function Contenu() {
     return [...carte.values()];
   }, [docs, regroupement]);
 
-  const telecharge = async (d: DocumentPublic, corrige = false) => {
-    const lien = corrige && d.lien_corrige ? d.lien_corrige : d.lien_telechargement;
-    try {
-      const url = await obtenirTelechargement(lien);
-      if (!(await fichierDisponible(url))) {
-        snack("Ce document est momentanément indisponible. Réessayez plus tard.");
-        return;
-      }
-      window.location.assign(url);
-      snack(`Téléchargement lancé : ${d.intitule_ue}`);
-    } catch (err) {
-      if (err instanceof ApiError && err.forfait && (err.status === 401 || err.status === 402)) setForfaitRequis(err.forfait);
-      else if (err instanceof ApiError && err.status === 401) snack("Connectez-vous pour télécharger ce document.");
-      else snack(err instanceof ApiError ? err.message : "Téléchargement impossible. Réessayez.");
-    }
-  };
   const toggleFavori = (d: DocumentPublic) => {
     if (estFavori(d)) {
       basculer(d);
@@ -177,7 +150,7 @@ function Contenu() {
           type="search"
           value={saisie}
           onChange={(e) => setSaisie(e.target.value)}
-          placeholder="Matière, code d'UE, filière"
+          placeholder="Matière, code d'UE ou filière"
           autoComplete="off"
           enterKeyHint="search"
         />
@@ -189,23 +162,23 @@ function Contenu() {
       </form>
       <div className="chips-row" role="group" aria-label="Filtres rapides">
         {pourMoiDispo && (
-          <button type="button" className="chip chip--accent" aria-pressed={prefs.pourMoi} onClick={() => maj({ pourMoi: !prefs.pourMoi })}>
-            {prefs.pourMoi && <Mi n="check" size={18} />}
+          <button type="button" className="chip" aria-pressed={prefs.pourMoi} onClick={() => maj({ pourMoi: !prefs.pourMoi })}>
+            {prefs.pourMoi && <Mi n="check" size={16} />}
             Mon niveau{monNiveau ? ` ${monNiveau}` : ""}
           </button>
         )}
         {NIVEAUX.map((n) => (
           <button key={n} type="button" className="chip" aria-pressed={prefs.niveau === n && !prefs.pourMoi} onClick={() => maj({ niveau: prefs.niveau === n ? "" : n, pourMoi: false })}>
-            {prefs.niveau === n && !prefs.pourMoi && <Mi n="check" size={18} />}
+            {prefs.niveau === n && !prefs.pourMoi && <Mi n="check" size={16} />}
             {n}
           </button>
         ))}
         <button type="button" className="chip" aria-pressed={type === "cours"} onClick={() => maj({ type: type === "cours" ? "" : "cours" })}>
-          {type === "cours" && <Mi n="check" size={18} />}
+          {type === "cours" && <Mi n="check" size={16} />}
           Cours
         </button>
         <button type="button" className="chip" aria-pressed={type === "sujet"} onClick={() => maj({ type: type === "sujet" ? "" : "sujet" })}>
-          {type === "sujet" && <Mi n="check" size={18} />}
+          {type === "sujet" && <Mi n="check" size={16} />}
           Sujets
         </button>
       </div>
@@ -222,13 +195,20 @@ function Contenu() {
               <p className="count">{pagination.total} document{pagination.total > 1 ? "s" : ""}</p>
             )}
           </div>
-          <div className="toggle" role="group" aria-label="Affichage">
+          <div className="results-tools">
+            <button type="button" className="btn btn--outline btn--sm" onClick={() => setFeuille(true)} aria-label="Ouvrir les filtres">
+              <Mi n="tune" size={20} />
+              <span>Filtres</span>
+              {nbFiltres > 0 && <b className="count-pill tabular">{nbFiltres}</b>}
+            </button>
+            <div className="toggle" role="group" aria-label="Affichage">
             <button type="button" aria-pressed={prefs.vue === "grille"} onClick={() => maj({ vue: "grille" })} aria-label="Affichage en grille">
               <Mi n="grid" />
             </button>
             <button type="button" aria-pressed={prefs.vue === "liste"} onClick={() => maj({ vue: "liste" })} aria-label="Affichage en liste">
               <Mi n="list" />
             </button>
+            </div>
           </div>
         </div>
 
@@ -245,7 +225,7 @@ function Contenu() {
           <div className="empty">
             <span className="empty-icon"><Mi n="file" size={32} /></span>
             <h2>Aucun document trouvé</h2>
-            <p>Essayez un autre mot, retirez un filtre, ou demandez le document à l&apos;administration.</p>
+            <p>Essayez un autre mot ou retirez un filtre. Vous pouvez aussi demander le document à l&apos;administration.</p>
             <div className="empty-actions">
               <button className="btn btn--primary" onClick={() => setDemande(true)}>Demander ce document</button>
               {nbFiltres > 0 || prefs.pourMoi ? (
@@ -275,6 +255,7 @@ function Contenu() {
                     favori={estFavori(d)}
                     basculerFavori={() => toggleFavori(d)}
                     surTelechargement={telecharge}
+                    surApercu={ouvrirApercu}
                     surPartage={partager}
                   />
                 ))}
@@ -292,18 +273,12 @@ function Contenu() {
         {chargement && docs.length > 0 && <p className="loading">Chargement…</p>}
         {!chargement && !erreur && docs.length > 0 && (
           <p className="manque">
-            Il manque un document ? <button type="button" onClick={() => setDemande(true)}>Faire une demande</button>
+            Un document manque ? <button type="button" onClick={() => setDemande(true)}>Faire une demande</button>
           </p>
         )}
       </section>
 
-      <button type="button" className="fab" onClick={() => setFeuille(true)} aria-label="Ouvrir les filtres">
-        <Mi n="tune" />
-        <span>Filtres</span>
-        {nbFiltres > 0 && <b className="fab-badge">{nbFiltres}</b>}
-      </button>
-
-      <FeuilleForfait forfait={forfaitRequis} fermer={() => setForfaitRequis(null)} />
+      {ecrans}
       <FeuilleDemande ouverte={demande} fermer={() => setDemande(false)} propose={texte} envoye={(m) => snack(m)} />
       <FeuilleFiltres ouverte={feuille} fermer={() => setFeuille(false)} prefs={prefs} filieres={filieres} maj={maj} reinitialiser={reinitialiser} />
     </AppShell>

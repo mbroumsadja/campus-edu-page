@@ -368,6 +368,14 @@ export const obtenirTelechargement = async (lien: string): Promise<string> => {
   return res.data.url;
 };
 
+// Adresse du fichier pour l'afficher : sans forfait requis et sans compter un téléchargement
+export const obtenirApercu = async (lien: string): Promise<string> => {
+  const chemin = lien.replace(/^\/api\/v1/, "");
+  const sep = chemin.includes("?") ? "&" : "?";
+  const res = await json<{ url: string }>(`${chemin}${sep}format=json&apercu=1`);
+  return res.data.url;
+};
+
 // Vérifie que le fichier répond avant de lancer le téléchargement (stockage saturé ou fichier supprimé :
 // le navigateur afficherait sinon l'icône de téléchargement sans rien enregistrer).
 // Une erreur réseau ou CORS n'est pas bloquante : on laisse le navigateur essayer.
@@ -411,5 +419,5 @@ export const demanderDocument = async (d: DemandeDocument) => {
   if (d.message) corps.message = d.message;
   if (d.contact) corps.contact = d.contact;
   const res = await json<{ id: number | null }>("/demandes", { method: "POST", body: corps });
-  return res.message ?? "Demande reçue. Merci !";
+  return res.message ?? "Demande reçue.";
 };
