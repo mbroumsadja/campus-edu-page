@@ -6,6 +6,11 @@ import Champ from "./Champ";
 import { ApiError, demanderDocument } from "../../lib/campus";
 import { useSession } from "../../lib/useSession";
 
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const chiffres = (c: string) => (c.match(/\d/g) || []).length;
+// Un e-mail, ou un numéro de 8 à 15 chiffres (+, espaces et tirets tolérés)
+const contactValide = (c: string) => EMAIL.test(c) || (/^\+?[\d\s.()-]{8,20}$/.test(c) && chiffres(c) >= 8 && chiffres(c) <= 15);
+
 type Props = { ouverte: boolean; fermer: () => void; propose: string; envoye: (message: string) => void };
 
 // Demande d'un document absent de la recherche, envoyée à l'administration
@@ -32,13 +37,17 @@ export default function FeuilleDemande({ ouverte, fermer, propose, envoye }: Pro
     if (envoi) return;
     setChamps({});
     setErreur("");
+    if (!contactValide(contact.trim())) {
+      setChamps({ contact: "Indiquez un numéro (WhatsApp ou appel) ou une adresse e-mail valide." });
+      return;
+    }
     setEnvoi(true);
     try {
       const m = await demanderDocument({
         nom_cours: cours.trim(),
         nom_etudiant: connecte ? undefined : nom.trim(),
         message: precisions.trim() || undefined,
-        contact: contact.trim() || undefined,
+        contact: contact.trim(),
       });
       setPrecisions("");
       envoye(m);
@@ -69,11 +78,11 @@ export default function FeuilleDemande({ ouverte, fermer, propose, envoye }: Pro
           </div>
           {champs.message && <small className="fd-err" role="alert">{champs.message}</small>}
         </div>
-        <Champ id="contact" label="Téléphone ou e-mail (facultatif)" value={contact} onChange={setContact} required={false} erreur={champs.contact} aide="Pour vous prévenir quand le document est ajouté." maxLength={150} />
+        <Champ id="contact" label="WhatsApp, téléphone ou e-mail" value={contact} onChange={setContact} autoComplete="tel" erreur={champs.contact} aide="L'administration vous écrit à ce contact quand le document est ajouté ou si elle a besoin d'une précision." maxLength={150} placeholder="6 90 00 00 00 ou nom@exemple.com" />
         {erreur && <p className="alert" role="alert">{erreur}</p>}
         <div className="sheet-actions">
           <button type="button" className="btn btn--text" onClick={fermer}>Annuler</button>
-          <button type="submit" className="btn btn--primary" disabled={envoi || cours.trim().length < 2 || (!connecte && !nom.trim())}>
+          <button type="submit" className="btn btn--primary" disabled={envoi || cours.trim().length < 2 || !contact.trim() || (!connecte && !nom.trim())}>
             {envoi ? "Envoi…" : "Envoyer la demande"}
           </button>
         </div>
