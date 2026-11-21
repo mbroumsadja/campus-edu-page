@@ -231,7 +231,8 @@
 /* ── Connexion et inscription ──────────────────────────── */
 .au { padding: 32px 0 40px; }
 .au-card { width: min(440px, 100%); margin-inline: auto; padding: 24px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); }
-.au-intro { margin-bottom: 24px; color: var(--text-3); font-size: 0.9375rem; }
+.au-logo { display: flex; justify-content: center; margin-bottom: 20px; }
+.au-intro { text-align: center; margin-bottom: 24px; color: var(--text-3); font-size: 0.9375rem; }
 .au-foot { margin-top: 24px; text-align: center; color: var(--text-3); font-size: 0.9375rem; }
 .au-foot a { color: var(--azur); font-weight: 500; }
 .au-foot a:hover { text-decoration: underline; }
